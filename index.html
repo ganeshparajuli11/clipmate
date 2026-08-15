@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ClipMate | macOS Clipboard Companion</title>
+    <meta
+      name="description"
+      content="ClipMate is a lightweight macOS menu bar app for pinned text, clipboard history, and quick screenshots."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="background-orb orb-a"></div>
+    <div class="background-orb orb-b"></div>
+    <div class="background-orb orb-c"></div>
+
+    <header class="glass navbar">
+      <div class="brand">ClipMate</div>
+      <nav>
+        <a href="#about">About</a>
+        <a href="#install">Install</a>
+        <a href="#usage">Use</a>
+        <a href="#download">Download</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="glass hero reveal">
+        <p class="chip">Built for macOS 13+ (Ventura and later)</p>
+        <h1>Your menu bar clipboard sidekick.</h1>
+        <p>
+          ClipMate keeps recent clipboard text, lets you pin what you paste most,
+          and adds one-key area screenshots.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" id="downloadTop" href="#download">Get ClipMate</a>
+          <a class="btn" href="#about">Learn More</a>
+        </div>
+      </section>
+
+      <section id="about" class="glass section reveal">
+        <h2>About this project</h2>
+        <p>
+          ClipMate is a tiny Swift/SwiftUI menu bar app focused on speed and
+          simplicity: pinned snippets, recent clipboard history, and quick screenshot
+          capture without extra clutter.
+        </p>
+        <div class="grid">
+          <article class="card">
+            <h3>Pinned Texts</h3>
+            <p>Store up to four frequently used snippets and copy them in one click.</p>
+          </article>
+          <article class="card">
+            <h3>Clipboard History</h3>
+            <p>Automatically track recent copied and cut text with de-duplication.</p>
+          </article>
+          <article class="card">
+            <h3>Quick Screenshots</h3>
+            <p>Capture a selected area, then save to Desktop or copy directly.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="install" class="glass section reveal">
+        <h2>Installation & running</h2>
+        <ol class="steps">
+          <li>Download <strong>ClipMate.dmg</strong> from the latest release.</li>
+          <li>Open the DMG and drag <strong>ClipMate</strong> into Applications.</li>
+          <li>
+            First launch: right-click ClipMate and choose <strong>Open</strong> to pass
+            Gatekeeper for self-signed apps.
+          </li>
+          <li>The app appears in the menu bar. Open settings from the gear icon.</li>
+        </ol>
+        <p class="muted">
+          Want to build from source? Open <code>ClipMate.xcodeproj</code> in Xcode and run
+          with <code>⌘R</code>.
+        </p>
+      </section>
+
+      <section id="usage" class="glass section reveal">
+        <h2>How to use ClipMate</h2>
+        <ul class="steps">
+          <li>Copy text normally (⌘C / ⌘X) to fill history.</li>
+          <li>Click any history item to copy it back to clipboard.</li>
+          <li>Pin important snippets from settings or directly from history.</li>
+          <li>Use screenshot action to capture an area and save or copy instantly.</li>
+        </ul>
+      </section>
+
+      <section id="download" class="glass section cta reveal">
+        <h2>Download ClipMate</h2>
+        <p>Get the latest macOS build and start using ClipMate in minutes.</p>
+        <a
+          class="btn primary large"
+          id="downloadButton"
+          href="https://github.com/ganeshparajuli11/clipmate/releases/latest"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Download from GitHub Releases
+        </a>
+      </section>
+    </main>
+
+    <footer class="glass footer">
+      <p>© ClipMate • Open source on GitHub</p>
+    </footer>
+
+    <script src="./script.js"></script>
+  </body>
+  </html>
