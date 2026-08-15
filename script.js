@@ -15,12 +15,14 @@ const observer = new IntersectionObserver(
 revealItems.forEach((item) => observer.observe(item));
 
 const sections = [...navLinks]
-  .map((link) => document.querySelector(link.getAttribute("href")))
+  .map((link) => link.getAttribute("href"))
+  .filter((href) => href && href.startsWith("#"))
+  .map((href) => document.getElementById(href.slice(1)))
   .filter(Boolean);
 
 const setActiveLink = () => {
   const offset = window.scrollY + 120;
-  let currentId = "";
+  let currentId = sections[0] ? `#${sections[0].id}` : "";
 
   sections.forEach((section) => {
     if (offset >= section.offsetTop) {
