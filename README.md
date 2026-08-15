@@ -30,6 +30,12 @@ A tiny macOS menu bar app for the things you paste all day: pinned texts, recent
 
 ## Install
 
+### Download
+
+Grab **`ClipMate.dmg`** from the [latest release](https://github.com/ganeshparajuli11/clipmate/releases/latest), open it, and drag ClipMate into Applications. macOS 13 Ventura or later.
+
+Because the app is signed with a self-signed certificate rather than an Apple Developer one, the first launch needs **right-click ▸ Open** — see [Gatekeeper](#gatekeeper) below.
+
 ### Build from source
 
 1. Install **Xcode** from the Mac App Store (free).
