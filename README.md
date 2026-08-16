@@ -12,6 +12,7 @@ A tiny macOS menu bar app for the things you paste all day: pinned texts, recent
 
 - **Pinned texts** — up to four. Your email, your phone number, that boilerplate reply. Click to copy, with a brief in-row `Copied ✓`.
 - **Clipboard history** — the last 6 clips (configurable, 3–12), newest first. Fills automatically as you copy; click any entry to put it back on the clipboard.
+- **Files as well as text** — copy files or folders in Finder and they land in the history with their real Finder icons. Click one to put it back on the clipboard, then **⌘V to copy** or **⌥⌘V to move** it wherever you are.
 - **Catches cuts too** — ClipMate watches the pasteboard, so ⌘X is captured exactly like ⌘C, from any app.
 - **Pin from the panel** — one click on a clip's pin button files it into the first free slot. Click again to un-pin. No slot picker, no trip to Settings.
 - **Starts completely empty** — no sample pins, no fake clips. Nothing appears until you actually copy something.
@@ -19,7 +20,7 @@ A tiny macOS menu bar app for the things you paste all day: pinned texts, recent
 - **Ask once, then remember** — optionally have ClipMate ask Copy-or-Save the first time, then silently reuse your answer forever.
 - **Two global hotkeys** — show/hide the panel (⌘2 by default) and take a screenshot without opening the panel first (⌘F1). Both re-recordable.
 - **Launch at login** — one toggle.
-- **Text only** — images and files on the clipboard are ignored rather than stored, which keeps memory flat.
+- **Knows when files go missing** — a copied file that has since been deleted or moved is shown struck through and refuses to paste a dead reference.
 
 ## Screenshots
 
@@ -58,7 +59,9 @@ A locally built app isn't signed with a paid Apple Developer certificate, so the
 
 **Pins** can be typed into Settings — four fields, `Pin 1` through `Pin 4`, filled in any order — or created straight from the panel by clicking the pin button on any recent clip, which drops it into the first free slot. Clicking a filled pin button un-pins. There is no "choose a slot" dialog anywhere in the app. Empty slots are never shown, and set pins collapse upward with no gaps. Edits save to `UserDefaults` immediately, so quitting, relaunching, or updating never loses them.
 
-**Clipboard history** starts empty and fills as you use the machine. Set the cap (3–12) in Settings, or clear it there or from the panel's `Clear` button. Pins are never touched by clearing history.
+**Clipboard history** starts empty and fills as you use the machine. Set the cap (3–12) in Settings, or clear it there or from the panel's `Clear` button. Pins are never touched by clearing history. Right-click any entry to remove just that one, or to reveal a copied file in Finder.
+
+**Files.** macOS has no ⌘X for files — Finder deliberately omits it. The Mac equivalent is copy-then-move-on-paste, and ClipMate supports the whole flow: copy files in Finder (⌘C), pick them from ClipMate later, then in the destination folder press **⌘V** to copy or **⌥⌘V** ("Edit ▸ Move Item Here") to move. Multi-file selections are kept together as a single entry. Pins remain text-only, since a pin is a plain string.
 
 **Screenshots** default to whichever radio option is selected. Turn on *Ask me the first time, then remember my choice* and the next capture shows a small Copy / Save prompt; after you answer, ClipMate never asks again. Change the remembered answer any time by picking a different radio, or flip the toggle off and on to be asked once more.
 
@@ -82,12 +85,13 @@ Nothing ever leaves your machine — there is no network code in this app at all
 - **Storage** is `UserDefaults`, a handful of keys: `clipmate.pins`, `clipmate.history`, `clipmate.historySize`, `clipmate.screenshotToClipboard`, `clipmate.screenshotAskFirst`, `clipmate.screenshotChoiceRemembered`.
 - **Capture** polls `NSPasteboard.changeCount` once a second — a single integer comparison; the pasteboard is only read when something actually changed. Watching the pasteboard rather than keystrokes is what makes ⌘X work for free, and is why no Accessibility permission is needed.
 - **History is de-duplicated** — re-copying an old clip promotes it to the top instead of adding a second row.
+- **File clips** are read with `readObjects(forClasses: [NSURL.self])` and checked *before* the plain-text branch, because a Finder copy also puts a text representation on the pasteboard. Writing them back uses `writeObjects`, which publishes both the file-URL type Finder needs and a text fallback. History is stored as JSON so a file clip keeps its full path list; older plain-`[String]` histories migrate automatically.
 - **Copy-to-clipboard screenshots** use `screencapture -ic`, which hands the image to the clipboard without ever touching disk. The Desktop path deletes its target file if the capture doesn't succeed, so a cancelled capture leaves nothing behind.
 - **Reduce Transparency** is honoured — the vibrancy layers fall back to a solid background.
 
 ## Non-goals
 
-No iCloud sync, no image or file clips, no accounts, no telemetry, no auto-updater. One third-party dependency ([KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts)) and nothing else. Keeping it small is the point.
+No iCloud sync, no image clips, no accounts, no telemetry, no auto-updater. One third-party dependency ([KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts)) and nothing else. Keeping it small is the point.
 
 ## Contributing
 

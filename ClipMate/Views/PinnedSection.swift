@@ -15,8 +15,9 @@ struct PinnedSection: View {
 
             ForEach(Array(settings.visiblePins.enumerated()), id: \.offset) { _, pinText in
                 RowView(
-                    icon: "pin.fill",
-                    text: pinText,
+                    icon: .symbol("pin.fill"),
+                    title: pinText.singleLinePreview,
+                    tooltip: pinText,
                     // The trailing button un-pins, which is the quickest way to
                     // free a slot without opening Settings.
                     pin: PinAffordance(
@@ -25,7 +26,8 @@ struct PinnedSection: View {
                         toggle: { settings.unpin(pinText) }
                     )
                 ) {
-                    clipboard.copy(pinText)
+                    clipboard.copy(text: pinText)
+                    return true
                 }
             }
         }

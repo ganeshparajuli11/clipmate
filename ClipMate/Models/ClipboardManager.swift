@@ -3,27 +3,24 @@ import Combine
 import Foundation
 
 /// Watches the system pasteboard and keeps a short, de-duplicated history of
-/// plain-text clips.
+/// recent clips — plain text or copied files.
 ///
 /// ## How capture works
 /// macOS has no "the clipboard changed" notification, so polling is the only
 /// reliable approach. `NSPasteboard.changeCount` is a cheap monotonically-increasing
 /// counter the system bumps on every write, so the 1-second timer compares it and
-/// does *nothing at all* unless it moved. Reading pasteboard contents — the only
-/// non-trivial work — happens once per actual copy, not once per second.
+/// does *nothing at all* unless it moved. The pasteboard is only actually read once
+/// per real copy, not once per second.
 ///
-/// Because this watches the pasteboard rather than keystrokes, it captures
-/// **⌘X (cut) exactly like ⌘C (copy)** — both write to the same pasteboard — along
-/// with copies made from menus, right-click, or any other app entirely.
+/// Because this watches the pasteboard rather than keystrokes, it captures cuts as
+/// well as copies, from Finder, menus, right-click, or any other app.
 ///
-/// History always starts **empty**. Nothing is ever seeded or pre-filled; the list
-/// only ever contains things the user actually copied.
+/// History always starts **empty**. Nothing is ever seeded or pre-filled.
 @MainActor
 final class ClipboardManager: ObservableObject {
 
-    /// Most-recent-first list of captured clips. Guaranteed free of duplicates,
-    /// which is what lets the views key rows by their text.
-    @Published private(set) var history: [String] = []
+    /// Most-recent-first list of captured clips, free of duplicates.
+    @Published private(set) var history: [Clip] = []
 
     private let defaults: UserDefaults
     private unowned let settings: AppSettings
@@ -33,22 +30,20 @@ final class ClipboardManager: ObservableObject {
     /// The last `changeCount` we have already accounted for.
     private var lastChangeCount: Int
 
-    /// How often to check the pasteboard. One second is imperceptible and, thanks
-    /// to the `changeCount` guard, essentially free.
+    /// One second is imperceptible and, thanks to the `changeCount` guard, free.
     private let pollInterval: TimeInterval = 1.0
 
     init(settings: AppSettings, defaults: UserDefaults = .standard) {
         self.settings = settings
         self.defaults = defaults
-        // Start from the current value so whatever happens to be on the pasteboard
-        // at launch is not re-captured as if it were brand new.
+        // Start from the current value so whatever is already on the pasteboard at
+        // launch is not re-captured as if it were new.
         self.lastChangeCount = NSPasteboard.general.changeCount
-        self.history = defaults.stringArray(forKey: AppSettings.Keys.history) ?? []
+        self.history = Self.loadHistory(from: defaults)
 
         trimHistory()
 
-        // Lowering the cap in Settings should take effect right away, not after the
-        // next copy.
+        // Lowering the cap in Settings should take effect right away.
         settings.$historySize
             .receive(on: RunLoop.main)
             .sink { [weak self] newSize in
@@ -60,6 +55,30 @@ final class ClipboardManager: ObservableObject {
 
     deinit {
         timer?.invalidate()
+    }
+
+    // MARK: - Persistence
+
+    /// Loads history, migrating the old plain-`[String]` format if present.
+    private static func loadHistory(from defaults: UserDefaults) -> [Clip] {
+        // Current format: JSON-encoded `[Clip]`.
+        if let data = defaults.data(forKey: AppSettings.Keys.history),
+           let clips = try? JSONDecoder().decode([Clip].self, from: data) {
+            return clips
+        }
+
+        // Legacy format: a plain string array from before file clips existed.
+        // Convert rather than discard, so upgrading does not wipe the user's list.
+        if let legacy = defaults.stringArray(forKey: AppSettings.Keys.history) {
+            return legacy.map { Clip(text: $0) }
+        }
+
+        return []
+    }
+
+    private func persistHistory() {
+        guard let data = try? JSONEncoder().encode(history) else { return }
+        defaults.set(data, forKey: AppSettings.Keys.history)
     }
 
     // MARK: - Monitoring
@@ -87,29 +106,22 @@ final class ClipboardManager: ObservableObject {
 
     /// The whole hot path: one integer comparison in the common case.
     private func pollPasteboard() {
-        let pasteboard = NSPasteboard.general
-        let changeCount = pasteboard.changeCount
+        let changeCount = NSPasteboard.general.changeCount
         guard changeCount != lastChangeCount else { return }
         lastChangeCount = changeCount
 
-        // Text-only by design. Images and file promises are ignored rather than
-        // stored, which keeps memory flat and `UserDefaults` small.
-        guard let text = pasteboard.string(forType: .string) else { return }
-        record(text)
+        guard let clip = Pasteboard.currentClip() else { return }
+        record(clip)
     }
 
     // MARK: - History
 
     /// Inserts a clip at the front, moving it there if it was already present.
-    private func record(_ text: String) {
-        // Ignore clips that are empty or pure whitespace — usually an artefact of
-        // an app clearing the pasteboard rather than something the user copied.
-        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-
-        // Remove-then-insert is what keeps the list duplicate-free and makes
-        // re-copying an old clip promote it back to the top.
-        history.removeAll { $0 == text }
-        history.insert(text, at: 0)
+    private func record(_ clip: Clip) {
+        // Remove-then-insert keeps the list duplicate-free and makes re-copying an
+        // old clip promote it back to the top.
+        history.removeAll { $0.id == clip.id }
+        history.insert(clip, at: 0)
         trimHistory()
         persistHistory()
     }
@@ -121,32 +133,45 @@ final class ClipboardManager: ObservableObject {
         }
     }
 
-    private func persistHistory() {
-        defaults.set(history, forKey: AppSettings.Keys.history)
-    }
-
     /// Clears every stored clip. Pinned texts are untouched.
     func clearHistory() {
         history.removeAll()
         persistHistory()
     }
 
-    /// Removes a single clip from history.
-    func remove(_ text: String) {
-        history.removeAll { $0 == text }
+    /// Drops a single clip, e.g. one whose files have all been deleted.
+    func remove(_ clip: Clip) {
+        history.removeAll { $0.id == clip.id }
         persistHistory()
     }
 
     // MARK: - Copying
 
-    /// Puts `text` on the system pasteboard and promotes it to the top of history.
+    /// Puts a clip back on the pasteboard and promotes it to the top of history.
     ///
-    /// The write is recorded synchronously and `lastChangeCount` is advanced past
-    /// our own write, so the panel updates instantly instead of waiting up to a
-    /// second for the poll to notice — and the clip is not processed twice.
-    func copy(_ text: String) {
+    /// `lastChangeCount` is advanced past our own write so the panel updates
+    /// instantly rather than waiting for the next poll, and the clip is not
+    /// processed twice.
+    ///
+    /// - Returns: `false` if this was a file clip whose files have all gone
+    ///   missing, in which case nothing is written to the pasteboard.
+    @discardableResult
+    func copy(_ clip: Clip) -> Bool {
+        if clip.isDangling { return false }
+
+        Pasteboard.copy(clip)
+        lastChangeCount = NSPasteboard.general.changeCount
+
+        // Re-record from what actually landed on the pasteboard, so a file clip
+        // whose missing entries were filtered out is stored in its trimmed form.
+        record(clip.kind == .files ? Clip(files: clip.existingURLs) : clip)
+        return true
+    }
+
+    /// Convenience for pinned texts, which are plain strings.
+    func copy(text: String) {
         Pasteboard.copy(text)
         lastChangeCount = NSPasteboard.general.changeCount
-        record(text)
+        record(Clip(text: text))
     }
 }

@@ -13,20 +13,26 @@ struct PinAffordance {
     let toggle: () -> Void
 }
 
-/// One tappable line in the panel — used for both pinned texts and recent clips.
-///
-/// Handles its own hover highlight and its own inline confirmation, so the sections
-/// above it stay declarative and stateless.
+/// One tappable line in the panel — used for pinned texts and for recent clips,
+/// whether those clips are text or files.
 struct RowView: View {
-    /// SF Symbol shown at the leading edge.
-    let icon: String
-    /// The full text this row represents; shown collapsed to a single line.
-    let text: String
-    /// Clips render monospaced so code and IDs stay legible; pins use the UI font.
+    /// SF Symbol, or a concrete image such as a Finder file icon.
+    let icon: RowIcon
+    /// One-line label.
+    let title: String
+    /// Full text shown on hover, since the label is truncated.
+    var tooltip: String = ""
+    /// Text clips render monospaced; file names and pins use the UI font.
     var monospaced: Bool = false
+    /// Filenames truncate in the middle so the extension stays visible; prose and
+    /// code read better truncated at the end.
+    var truncation: Text.TruncationMode = .tail
+    /// Greyed out and non-copying — used for file clips whose files are gone.
+    var isUnavailable: Bool = false
     /// When non-nil, a pin button is shown at the trailing edge.
     var pin: PinAffordance?
-    let action: () -> Void
+    /// Return `false` to signal the copy did not happen.
+    let action: () -> Bool
 
     @Environment(\.colorScheme) private var colorScheme
     @State private var isHovering = false
@@ -43,25 +49,23 @@ struct RowView: View {
             // button copies.
             Button(action: handleTap) {
                 HStack(spacing: 8) {
-                    Image(systemName: icon)
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(isHovering ? Theme.accent : Color.secondary)
-                        .frame(width: 14)
+                    iconView
 
-                    Text(text.singleLinePreview)
+                    Text(title)
                         .font(monospaced
                               ? .system(size: 11.5, design: .monospaced)
                               : .system(size: 12.5))
+                        .foregroundStyle(isUnavailable ? Color.secondary : Color.primary)
+                        .strikethrough(isUnavailable, color: .secondary)
                         .lineLimit(1)
-                        .truncationMode(.tail)
+                        .truncationMode(truncation)
 
                     Spacer(minLength: 4)
                 }
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            // The preview is truncated to one line, so the tooltip carries it all.
-            .help(text)
+            .help(tooltip.isEmpty ? title : tooltip)
 
             trailingAccessory
         }
@@ -76,6 +80,26 @@ struct RowView: View {
             withAnimation(Theme.subtle) { isHovering = hovering }
         }
         .onDisappear { resetTask?.cancel() }
+    }
+
+    // MARK: - Icon
+
+    @ViewBuilder
+    private var iconView: some View {
+        switch icon {
+        case .symbol(let name):
+            Image(systemName: name)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(isHovering ? Theme.accent : Color.secondary)
+                .frame(width: 16)
+        case .image(let nsImage):
+            // Real Finder icon, so a folder looks like a folder.
+            Image(nsImage: nsImage)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 16, height: 16)
+                .opacity(isUnavailable ? 0.4 : 1)
+        }
     }
 
     // MARK: - Trailing accessory
@@ -131,8 +155,7 @@ struct RowView: View {
     // MARK: - Actions
 
     private func handleTap() {
-        action()
-        showConfirmation("Copied ✓")
+        showConfirmation(action() ? "Copied ✓" : "File missing")
     }
 
     private func showConfirmation(_ message: String) {
