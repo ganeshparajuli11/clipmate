@@ -10,6 +10,11 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var clipboard: ClipboardManager
+    @EnvironmentObject private var finderCut: FinderCutService
+
+    /// Re-checked whenever Settings appears and while it is open, so the status
+    /// line updates as soon as the user grants Accessibility in System Settings.
+    @State private var hasAccessibility = FinderCutService.hasAccessibilityPermission
 
     var body: some View {
         Form {
@@ -52,7 +57,7 @@ struct SettingsView: View {
             } header: {
                 Text("Clipboard history")
             } footer: {
-                Text("History fills automatically as you copy (⌘C) or cut (⌘X) in any app — nothing is pre-filled. Text only; images and files are ignored.")
+                Text("History fills automatically as you copy or cut in any app — nothing is pre-filled. Text and copied files both appear; clipboard images are ignored.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -85,6 +90,55 @@ struct SettingsView: View {
                 Text("Screenshots")
             } footer: {
                 Text(screenshotFooterText)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Section {
+                Toggle(
+                    "Use ⌘X to cut and ⌘V to move files in Finder",
+                    isOn: $settings.finderCutEnabled
+                )
+
+                if settings.finderCutEnabled {
+                    if hasAccessibility {
+                        Label(
+                            finderCut.isRunning
+                                ? "Active — ⌘X cuts, ⌘V moves."
+                                : "Starting…",
+                            systemImage: finderCut.isRunning
+                                ? "checkmark.circle.fill"
+                                : "clock"
+                        )
+                        .font(.caption)
+                        .foregroundStyle(finderCut.isRunning ? .green : .secondary)
+                    } else {
+                        Label(
+                            "Needs Accessibility permission to intercept ⌘X.",
+                            systemImage: "exclamationmark.triangle.fill"
+                        )
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                        Button("Open Accessibility Settings…") {
+                            FinderCutService.requestAccessibilityPermission()
+                            FinderCutService.openAccessibilitySettings()
+                        }
+                    }
+
+                    if let error = finderCut.lastError {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            } header: {
+                Text("Finder cut & paste")
+            } footer: {
+                Text(finderFooter)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -124,7 +178,20 @@ struct SettingsView: View {
             // The user may have removed ClipMate from System Settings ▸ Login Items
             // behind our back, so re-read the real state each time this appears.
             settings.refreshLaunchAtLoginStatus()
+            hasAccessibility = FinderCutService.hasAccessibilityPermission
         }
+        // Granting Accessibility happens in System Settings, outside this window,
+        // so poll while Settings is open rather than leaving a stale status.
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
+            hasAccessibility = FinderCutService.hasAccessibilityPermission
+        }
+    }
+
+    private var finderFooter: String {
+        if !settings.finderCutEnabled {
+            return "Off by default. macOS has no ⌘X for files — the Mac way is ⌘C then ⌥⌘V. Turn this on to use ⌘X and ⌘V instead, like Windows."
+        }
+        return "Only applies while Finder is frontmost, and never when you're renaming a file. ⌥⌘V keeps working as normal. Press Escape to abandon a cut. This is the one feature that needs Accessibility permission — there is no way to intercept ⌘X without it."
     }
 
     private var screenshotFooterText: String {

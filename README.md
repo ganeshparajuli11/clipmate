@@ -14,6 +14,7 @@ A tiny macOS menu bar app for the things you paste all day: pinned texts, recent
 - **Clipboard history** — the last 6 clips (configurable, 3–12), newest first. Fills automatically as you copy; click any entry to put it back on the clipboard.
 - **Files as well as text** — copy files or folders in Finder and they land in the history with their real Finder icons. Click one to put it back on the clipboard, then **⌘V to copy** or **⌥⌘V to move** it wherever you are.
 - **Catches cuts too** — ClipMate watches the pasteboard, so ⌘X is captured exactly like ⌘C, from any app.
+- **Optional Windows-style cut in Finder** — turn on one setting and ⌘X cuts files, ⌘V moves them. Off by default; it's the only feature that asks for Accessibility.
 - **Pin from the panel** — one click on a clip's pin button files it into the first free slot. Click again to un-pin. No slot picker, no trip to Settings.
 - **Starts completely empty** — no sample pins, no fake clips. Nothing appears until you actually copy something.
 - **Screenshot** — drag-select any region. Save a timestamped PNG to the Desktop, or copy it straight to the clipboard with no file written at all.
@@ -63,6 +64,12 @@ A locally built app isn't signed with a paid Apple Developer certificate, so the
 
 **Files.** macOS has no ⌘X for files — Finder deliberately omits it. The Mac equivalent is copy-then-move-on-paste, and ClipMate supports the whole flow: copy files in Finder (⌘C), pick them from ClipMate later, then in the destination folder press **⌘V** to copy or **⌥⌘V** ("Edit ▸ Move Item Here") to move. Multi-file selections are kept together as a single entry. Pins remain text-only, since a pin is a plain string.
 
+**Finder cut & paste (optional).** If you'd rather have the Windows behaviour, Settings has a toggle: *Use ⌘X to cut and ⌘V to move files in Finder*. With it on, ⌘X marks the selection and ⌘V moves it into whatever folder you're viewing. Press **Escape** to abandon a pending cut.
+
+The interception is deliberately narrow — it only takes over ⌘X/⌘V when Finder is frontmost and you are **not** renaming a file, so cutting text in a rename field still works, and every other app is untouched. ⌥⌘V keeps working as normal. On a name collision the moved file is renamed (`report 2.txt`); nothing is ever overwritten.
+
+This is the one feature that needs **Accessibility** permission, because refusing to deliver a keystroke to Finder is only possible with an event tap, and macOS gates those behind Accessibility. It also asks for **Automation** access to Finder, to read the selection and the current folder. Leave the toggle off and neither is ever requested.
+
 **Screenshots** default to whichever radio option is selected. Turn on *Ask me the first time, then remember my choice* and the next capture shows a small Copy / Save prompt; after you answer, ClipMate never asks again. Change the remembered answer any time by picking a different radio, or flip the toggle off and on to be asked once more.
 
 **Both hotkeys** are recorded in Settings and apply the moment you set them.
@@ -73,10 +80,11 @@ ClipMate is built to ask for as little as possible.
 
 | Permission | Needed? | Why |
 |---|---|---|
-| **Accessibility** | ❌ No | Both hotkeys use Carbon's hotkey API, which doesn't require it. |
 | **Notifications** | ❌ No | Confirmations appear inside the panel instead. |
 | **Full Disk Access** | ❌ No | Nothing is read outside the app's own preferences. |
 | **Screen Recording** | ⚠️ Once | Only the first time you take a screenshot. macOS shows the prompt itself; ClipMate never asks up front. |
+| **Accessibility** | ⚙️ Opt-in | Only if you switch on Finder cut & paste. The hotkeys use Carbon and never need it. |
+| **Automation (Finder)** | ⚙️ Opt-in | Same feature only — used to read the Finder selection and the folder you're viewing. |
 
 Nothing ever leaves your machine — there is no network code in this app at all.
 
@@ -87,6 +95,7 @@ Nothing ever leaves your machine — there is no network code in this app at all
 - **History is de-duplicated** — re-copying an old clip promotes it to the top instead of adding a second row.
 - **File clips** are read with `readObjects(forClasses: [NSURL.self])` and checked *before* the plain-text branch, because a Finder copy also puts a text representation on the pasteboard. Writing them back uses `writeObjects`, which publishes both the file-URL type Finder needs and a text fallback. History is stored as JSON so a file clip keeps its full path list; older plain-`[String]` histories migrate automatically.
 - **Copy-to-clipboard screenshots** use `screencapture -ic`, which hands the image to the clipboard without ever touching disk. The Desktop path deletes its target file if the capture doesn't succeed, so a cancelled capture leaves nothing behind.
+- **Finder cut & paste** uses a `CGEventTap` that swallows the keystroke and then does the slow work asynchronously, because a tap callback that blocks for too long gets disabled by the system. It re-enables itself if macOS disables it. Finder's selection and insertion location come from AppleScript; the move is plain `FileManager`, with collision renaming rather than overwriting.
 - **Reduce Transparency** is honoured — the vibrancy layers fall back to a solid background.
 
 ## Non-goals

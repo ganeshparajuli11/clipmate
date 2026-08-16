@@ -43,6 +43,7 @@ final class AppSettings: ObservableObject {
         static let screenshotToClipboard = "clipmate.screenshotToClipboard"
         static let screenshotAskFirst = "clipmate.screenshotAskFirst"
         static let screenshotChoiceRemembered = "clipmate.screenshotChoiceRemembered"
+        static let finderCutEnabled = "clipmate.finderCutEnabled"
     }
 
     /// ClipMate always offers this many pinned slots in Settings.
@@ -163,6 +164,17 @@ final class AppSettings: ObservableObject {
         isSyncingScreenshotChoice = false
     }
 
+    // MARK: - Finder cut & paste
+
+    /// Opt-in: make ⌘X cut and ⌘V move inside Finder, Windows style.
+    ///
+    /// Off by default and deliberately so — turning it on is what triggers the
+    /// Accessibility request. A user who leaves it alone is never asked for
+    /// anything beyond the one-off Screen Recording prompt for screenshots.
+    @Published var finderCutEnabled: Bool {
+        didSet { defaults.set(finderCutEnabled, forKey: Keys.finderCutEnabled) }
+    }
+
     // MARK: - Launch at login
 
     /// Mirrors the app's `SMAppService` registration state.
@@ -199,6 +211,7 @@ final class AppSettings: ObservableObject {
         self.askScreenshotDestinationFirstTime = defaults.bool(forKey: Keys.screenshotAskFirst)
         self.hasRememberedScreenshotChoice = defaults.bool(forKey: Keys.screenshotChoiceRemembered)
 
+        self.finderCutEnabled = defaults.bool(forKey: Keys.finderCutEnabled)
         self.launchAtLogin = SMAppService.mainApp.status == .enabled
     }
 

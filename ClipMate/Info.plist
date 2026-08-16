@@ -17,14 +17,16 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1</string>
+	<string>1.2</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>3</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<!-- Agent app: no Dock icon, no app menu bar. ClipMate is only its status item. -->
 	<key>LSUIElement</key>
 	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>ClipMate asks Finder which files are selected and which folder is open, so that ⌘X can cut them and ⌘V can move them. This is only used when you turn on Finder cut &amp; paste in Settings.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026. Released under the MIT License.</string>
 </dict>

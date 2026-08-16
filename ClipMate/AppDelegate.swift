@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import KeyboardShortcuts
 import SwiftUI
 
@@ -16,6 +17,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private let settings = AppSettings()
     private lazy var clipboard = ClipboardManager(settings: settings)
+    private let finderCut = FinderCutService()
 
     // MARK: - AppKit state
 
@@ -34,6 +36,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Handles Escape while the panel is open.
     private var escapeMonitor: Any?
 
+    private var cancellables = Set<AnyCancellable>()
+
     // MARK: - Lifecycle
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -41,10 +45,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         configurePopover()
         configureHotkeys()
         clipboard.startMonitoring()
+        configureFinderCut()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         clipboard.stopMonitoring()
+        finderCut.stop()
         removePanelMonitors()
     }
 
@@ -188,13 +194,40 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    // MARK: - Finder cut & paste
+
+    /// Starts or stops the Finder event tap to match the setting, now and whenever
+    /// the user toggles it.
+    private func configureFinderCut() {
+        applyFinderCutSetting()
+        settings.$finderCutEnabled
+            .receive(on: RunLoop.main)
+            .sink { [weak self] enabled in
+                self?.applyFinderCutSetting(enabled)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func applyFinderCutSetting(_ enabled: Bool? = nil) {
+        if enabled ?? settings.finderCutEnabled {
+            // Prompts for Accessibility the first time; a refusal just leaves the
+            // tap uninstalled and Settings explains why.
+            if !FinderCutService.hasAccessibilityPermission {
+                FinderCutService.requestAccessibilityPermission()
+            }
+            finderCut.start()
+        } else {
+            finderCut.stop()
+        }
+    }
+
     // MARK: - Actions
 
     private func openSettings() {
         closePanel()
 
         if settingsWindowController == nil {
-            settingsWindowController = SettingsWindowController(settings: settings, clipboard: clipboard)
+            settingsWindowController = SettingsWindowController(settings: settings, clipboard: clipboard, finderCut: finderCut)
         }
         settingsWindowController?.present()
     }
