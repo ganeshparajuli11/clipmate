@@ -52,6 +52,20 @@ To keep it around permanently:
 
 From then on it just runs — no Xcode, no terminal.
 
+### Signing (read this if the build fails)
+
+The project is configured to sign with a local certificate named **`ClipMate Self-Signed`**, which won't exist on your machine. If you see *"No certificate matching 'ClipMate Self-Signed' found"*, pick one of these:
+
+**Quickest — build ad-hoc.** In Xcode, select the ClipMate target ▸ *Signing & Capabilities* ▸ set Signing Certificate to **Sign to Run Locally**. Or from the command line:
+
+```
+xcodebuild -scheme ClipMate CODE_SIGN_IDENTITY="-" CODE_SIGN_STYLE=Automatic build
+```
+
+**Better if you'll rebuild often — make your own certificate.** Keychain Access ▸ *Certificate Assistant* ▸ *Create a Certificate…*, name it `ClipMate Self-Signed`, Identity Type **Self Signed Root**, Certificate Type **Code Signing**. No Apple ID needed.
+
+Why bother? An ad-hoc signature's identity is just a hash of the binary, so **every rebuild looks like a brand-new app to macOS** and the Screen Recording permission resets each time. Signing with a stable certificate makes the identity survive rebuilds, so you grant permissions once. That is the only reason this setting exists.
+
 ### Gatekeeper
 
 A locally built app isn't signed with a paid Apple Developer certificate, so the first time you open it from `/Applications` macOS may refuse. **Right-click the app ▸ Open**, then confirm — or approve it in **System Settings ▸ Privacy & Security**. You only do this once. Proper signing and notarization need a paid Apple Developer account and are out of scope.
