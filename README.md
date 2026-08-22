@@ -2,6 +2,8 @@
 
 A tiny macOS menu bar app for the things you paste all day: pinned texts, recent clips, and a one-key area screenshot.
 
+**[clipmate website →](https://ganeshparajuli11.github.io/clipmate/)** &nbsp;·&nbsp; **[Download the latest release →](https://github.com/ganeshparajuli11/clipmate/releases/latest/download/ClipMate.dmg)**
+
 <!-- Repo description suggestion:
      "A lightweight macOS menu bar app for pinned texts, clipboard history, and quick screenshots."
      Suggested topics: macos, menubar, swift, swiftui, appkit, clipboard,
