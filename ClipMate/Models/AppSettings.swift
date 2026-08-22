@@ -55,6 +55,9 @@ final class AppSettings: ObservableObject {
     /// bound keeps the popover from growing taller than a small laptop display.
     static let historySizeRange = 3...12
 
+    /// Ten recent clips, matching what Windows' clipboard history shows.
+    static let defaultHistorySize = 10
+
     private let defaults: UserDefaults
 
     // MARK: - Pins
@@ -203,7 +206,7 @@ final class AppSettings: ObservableObject {
         self.pins = Self.normalisePins(storedPins)
 
         let storedSize = defaults.object(forKey: Keys.historySize) as? Int
-        self.historySize = (storedSize ?? 6).clamped(to: Self.historySizeRange)
+        self.historySize = (storedSize ?? Self.defaultHistorySize).clamped(to: Self.historySizeRange)
 
         let toClipboard = defaults.bool(forKey: Keys.screenshotToClipboard)
         self.screenshotDestination = toClipboard ? .clipboard : .desktop

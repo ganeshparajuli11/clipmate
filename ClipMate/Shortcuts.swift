@@ -6,19 +6,23 @@ import KeyboardShortcuts
 /// an `NSEvent` global monitor — does **not** require the Accessibility permission.
 /// Both shortcuts are re-recordable in Settings and take effect immediately.
 extension KeyboardShortcuts.Name {
-    /// Shows or hides the ClipMate panel. Same action as clicking the menu bar icon.
+
+    /// Shows or hides the panel — ClipMate's answer to Windows' Win+V.
     ///
-    /// Defaults to ⌘2, echoing the Windows clipboard-history shortcut.
+    /// Defaults to ⇧⌘E. Function-key and plain ⌘-digit combinations were avoided
+    /// deliberately: ⌘F1 is claimed by the system for display mirroring, and
+    /// ⌘-digit is taken by tab switching in most browsers and editors.
     static let togglePanel = Self(
         "togglePanel",
-        default: .init(.two, modifiers: [.command])
+        default: .init(.e, modifiers: [.command, .shift])
     )
 
     /// Starts an area screenshot immediately, without opening the panel first.
     ///
-    /// Defaults to ⌘F1.
+    /// Defaults to ⇧⌘D. Note this shadows Finder's "go to Desktop" shortcut while
+    /// ClipMate is running; re-record it in Settings if you use that.
     static let takeScreenshot = Self(
         "takeScreenshot",
-        default: .init(.f1, modifiers: [.command])
+        default: .init(.d, modifiers: [.command, .shift])
     )
 }

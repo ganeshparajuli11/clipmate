@@ -22,31 +22,6 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section {
-                // Four plain fields. The user fills any of them in any order —
-                // there is no slot picker anywhere in the app.
-                ForEach(0..<AppSettings.pinCount, id: \.self) { index in
-                    TextField(
-                        "Pin \(index + 1)",
-                        text: Binding(
-                            get: { settings.pins[safe: index] ?? "" },
-                            set: { newValue in
-                                guard settings.pins.indices.contains(index) else { return }
-                                settings.pins[index] = newValue
-                            }
-                        ),
-                        prompt: Text("Leave empty to hide this slot")
-                    )
-                    .textFieldStyle(.roundedBorder)
-                }
-            } header: {
-                Text("Pinned texts")
-            } footer: {
-                Text("Click a pin in the panel to copy it. Empty slots are hidden. You can also pin any recent clip straight from the panel.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            Section {
                 Stepper(
                     "Keep \(settings.historySize) recent clips",
                     value: $settings.historySize,

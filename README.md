@@ -11,7 +11,7 @@ A tiny macOS menu bar app for the things you paste all day: pinned texts, recent
 ## Features
 
 - **Pinned texts** — up to four. Your email, your phone number, that boilerplate reply. Click to copy, with a brief in-row `Copied ✓`.
-- **Clipboard history** — the last 6 clips (configurable, 3–12), newest first. Fills automatically as you copy; click any entry to put it back on the clipboard.
+- **Clipboard history** — the last 10 clips (configurable, 3–12), newest first. Text, files, images and your own screenshots all land in one list. Click any entry to put it back on the clipboard.
 - **Files as well as text** — copy files or folders in Finder and they land in the history with their real Finder icons. Click one to put it back on the clipboard, then **⌘V to copy** or **⌥⌘V to move** it wherever you are.
 - **Images too** — copy a screenshot or an image from any app and it's kept as a thumbnail. Re-copying publishes both PNG and TIFF, so it pastes into browsers, chat apps, Preview and Finder alike.
 - **Drag any row out** — drop a clip straight into another app. Files and images carry their file URL, so a drop into Finder produces a real file.
@@ -21,7 +21,7 @@ A tiny macOS menu bar app for the things you paste all day: pinned texts, recent
 - **Starts completely empty** — no sample pins, no fake clips. Nothing appears until you actually copy something.
 - **Screenshot** — drag-select any region. Save a timestamped PNG to the Desktop, or copy it straight to the clipboard with no file written at all.
 - **Ask once, then remember** — optionally have ClipMate ask Copy-or-Save the first time, then silently reuse your answer forever.
-- **Two global hotkeys** — show/hide the panel (⌘2 by default) and take a screenshot without opening the panel first (⌘F1). Both re-recordable.
+- **Two global hotkeys** — **⇧⌘E** shows the panel (ClipMate's Win+V), **⇧⌘D** takes a screenshot without opening the panel first. Both re-recordable in Settings.
 - **Launch at login** — one toggle.
 - **Knows when files go missing** — a copied file that has since been deleted or moved is shown struck through and refuses to paste a dead reference.
 - **⌘C/⌘V work in the app itself** — an agent app gets no menu bar, which normally leaves its own text fields unable to copy or paste. ClipMate installs an Edit menu so editing works everywhere.
@@ -75,7 +75,7 @@ A locally built app isn't signed with a paid Apple Developer certificate, so the
 
 ## Using it
 
-**Pins** can be typed into Settings — four fields, `Pin 1` through `Pin 4`, filled in any order — or created straight from the panel by clicking the pin button on any recent clip, which drops it into the first free slot. Clicking a filled pin button un-pins. There is no "choose a slot" dialog anywhere in the app. Empty slots are never shown, and set pins collapse upward with no gaps. Edits save to `UserDefaults` immediately, so quitting, relaunching, or updating never loses them.
+**Pins** are made from the panel: click the pin button on any recent clip and it goes into the first free slot, up to four. Click a filled pin button to un-pin. There is no slot picker and no separate editor — copy the thing you want pinned, then pin it. Empty slots are never shown, and pins collapse upward with no gaps. They save immediately, so quitting, relaunching, or updating never loses them.
 
 **Clipboard history** starts empty and fills as you use the machine. Set the cap (3–12) in Settings, or clear it there or from the panel's `Clear` button. Pins are never touched by clearing history. Right-click any entry to remove just that one, or to reveal a copied file in Finder.
 
@@ -87,9 +87,9 @@ The interception is deliberately narrow — it only takes over ⌘X/⌘V when Fi
 
 This is the one feature that needs **Accessibility** permission, because refusing to deliver a keystroke to Finder is only possible with an event tap, and macOS gates those behind Accessibility. It also asks for **Automation** access to Finder, to read the selection and the current folder. Leave the toggle off and neither is ever requested.
 
-**Screenshots** default to whichever radio option is selected. Turn on *Ask me the first time, then remember my choice* and the next capture shows a small Copy / Save prompt; after you answer, ClipMate never asks again. Change the remembered answer any time by picking a different radio, or flip the toggle off and on to be asked once more.
+**Screenshots** land in the history either way — copied ones arrive via the clipboard, saved ones are added from the file. They default to whichever radio option is selected. Turn on *Ask me the first time, then remember my choice* and the next capture shows a small Copy / Save prompt; after you answer, ClipMate never asks again. Change the remembered answer any time by picking a different radio, or flip the toggle off and on to be asked once more.
 
-**Both hotkeys** are recorded in Settings and apply the moment you set them.
+**Both hotkeys** are recorded in Settings and apply the moment you set them. The defaults avoid keys macOS has already claimed — ⌘F1 in particular is reserved for display mirroring and can never reach an app. ⇧⌘D does shadow Finder's "go to Desktop" while ClipMate runs; re-record it if you use that.
 
 ## Permissions
 

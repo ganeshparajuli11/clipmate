@@ -169,7 +169,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Hotkeys
 
     private func configureHotkeys() {
-        migrateLegacyPanelShortcutIfNeeded()
+        migrateLegacyDefaultsIfNeeded()
 
         // Carbon-based registration: system-wide, and no Accessibility permission.
         // Re-recording either shortcut in Settings re-registers it automatically.
@@ -182,20 +182,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    /// Earlier builds shipped ⌥⌘V as the panel shortcut and persisted it, which
-    /// would otherwise shadow the new ⌘2 default forever on an upgraded install.
+    /// Adopts newer defaults on installs that still carry an older build's.
     ///
-    /// Runs once, and only replaces the shortcut if it still matches that old
-    /// default — anything the user deliberately recorded is left alone.
-    private func migrateLegacyPanelShortcutIfNeeded() {
-        let migrationKey = "clipmate.didMigratePanelShortcut"
+    /// `KeyboardShortcuts` persists a shortcut as soon as it is registered, so a
+    /// default that shipped in an earlier version would otherwise shadow the new
+    /// one forever. Each value is only replaced when it still matches exactly what
+    /// that older version shipped — anything the user chose themselves is left
+    /// alone. Runs once.
+    private func migrateLegacyDefaultsIfNeeded() {
+        let migrationKey = "clipmate.didMigrateDefaults.v13"
         let defaults = UserDefaults.standard
         guard !defaults.bool(forKey: migrationKey) else { return }
         defaults.set(true, forKey: migrationKey)
 
-        let legacyDefault = KeyboardShortcuts.Shortcut(.v, modifiers: [.option, .command])
-        if KeyboardShortcuts.getShortcut(for: .togglePanel) == legacyDefault {
+        // Panel: ⌥⌘V (v1.0) and ⌘2 (v1.1–1.2) both give way to ⇧⌘E.
+        let oldPanelDefaults = [
+            KeyboardShortcuts.Shortcut(.v, modifiers: [.option, .command]),
+            KeyboardShortcuts.Shortcut(.two, modifiers: [.command])
+        ]
+        if let current = KeyboardShortcuts.getShortcut(for: .togglePanel),
+           oldPanelDefaults.contains(current) {
             KeyboardShortcuts.reset(.togglePanel)
+        }
+
+        // Screenshot: ⌘F1 never worked — macOS claims it for display mirroring.
+        let oldScreenshotDefault = KeyboardShortcuts.Shortcut(.f1, modifiers: [.command])
+        if KeyboardShortcuts.getShortcut(for: .takeScreenshot) == oldScreenshotDefault {
+            KeyboardShortcuts.reset(.takeScreenshot)
+        }
+
+        // History: the old default of 6 becomes 10, matching Windows.
+        if (defaults.object(forKey: AppSettings.Keys.historySize) as? Int) == 6 {
+            settings.historySize = AppSettings.defaultHistorySize
         }
     }
 
@@ -265,9 +283,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func performCapture(to destination: ScreenshotDestination) {
-        ScreenshotService.captureInteractive(to: destination) { result in
+        ScreenshotService.captureInteractive(to: destination) { [weak self] result in
             switch result {
-            case .savedToFile, .copiedToClipboard, .cancelled:
+            case .savedToFile(let url):
+                // A Desktop screenshot never touches the pasteboard, so the poller
+                // would never see it. Record it explicitly so screenshots and
+                // copies live in one list.
+                self?.clipboard.recordExternalImage(at: url)
+            case .copiedToClipboard, .cancelled:
                 // Success and cancellation are both self-evident — the file lands
                 // on the Desktop, the image lands on the clipboard, or nothing
                 // happens. No notification permission needed.

@@ -182,6 +182,16 @@ final class ClipboardManager: ObservableObject {
         return true
     }
 
+    /// Adds an image that reached disk without going through the pasteboard —
+    /// specifically a screenshot saved straight to the Desktop.
+    ///
+    /// The clip points at the user's own file. `ClipImageStore` only ever deletes
+    /// inside its own directory, so pruning can never remove a Desktop screenshot.
+    func recordExternalImage(at url: URL) {
+        guard let rep = NSImage(contentsOf: url)?.representations.first else { return }
+        record(Clip(imageAt: url, width: rep.pixelsWide, height: rep.pixelsHigh))
+    }
+
     /// Convenience for pinned texts, which are plain strings.
     func copy(text: String) {
         Pasteboard.copy(text)
