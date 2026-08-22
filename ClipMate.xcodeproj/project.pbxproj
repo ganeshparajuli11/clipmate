@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CB17000000000000000000F8 /* ClipImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000000F7 /* ClipImageStore.swift */; };
+		CB17000000000000000000F6 /* MainMenuBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000000F5 /* MainMenuBuilder.swift */; };
 		CB17000000000000000000F4 /* FinderCutService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000000F3 /* FinderCutService.swift */; };
 		CB17000000000000000000F2 /* Clip.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000000F1 /* Clip.swift */; };
 		CB1700000000000000000019 /* ClipMateApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1700000000000000000018 /* ClipMateApp.swift */; };
@@ -29,6 +31,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CB17000000000000000000F7 /* ClipImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipImageStore.swift; sourceTree = "<group>"; };
+		CB17000000000000000000F5 /* MainMenuBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuBuilder.swift; sourceTree = "<group>"; };
 		CB17000000000000000000F3 /* FinderCutService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinderCutService.swift; sourceTree = "<group>"; };
 		CB17000000000000000000F1 /* Clip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Clip.swift; sourceTree = "<group>"; };
 		CB1700000000000000000001 /* ClipMate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClipMate.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -96,6 +100,7 @@
 		CB1700000000000000000007 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				CB17000000000000000000F7 /* ClipImageStore.swift */,
 				CB17000000000000000000F3 /* FinderCutService.swift */,
 				CB17000000000000000000F1 /* Clip.swift */,
 				CB170000000000000000001E /* AppSettings.swift */,
@@ -109,6 +114,7 @@
 		CB1700000000000000000008 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				CB17000000000000000000F5 /* MainMenuBuilder.swift */,
 				CB1700000000000000000026 /* HistorySection.swift */,
 				CB1700000000000000000028 /* PanelView.swift */,
 				CB170000000000000000002A /* PinnedSection.swift */,
@@ -195,6 +201,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CB17000000000000000000F8 /* ClipImageStore.swift in Sources */,
+				CB17000000000000000000F6 /* MainMenuBuilder.swift in Sources */,
 				CB17000000000000000000F4 /* FinderCutService.swift in Sources */,
 				CB17000000000000000000F2 /* Clip.swift in Sources */,
 				CB1700000000000000000019 /* ClipMateApp.swift in Sources */,
@@ -332,7 +340,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				CODE_SIGN_IDENTITY = "ClipMate Self-Signed";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
@@ -346,7 +354,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.clipmate.ClipMate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -360,7 +368,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				CODE_SIGN_IDENTITY = "ClipMate Self-Signed";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
@@ -374,7 +382,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.clipmate.ClipMate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

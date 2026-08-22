@@ -79,6 +79,20 @@ final class ClipboardManager: ObservableObject {
     private func persistHistory() {
         guard let data = try? JSONEncoder().encode(history) else { return }
         defaults.set(data, forKey: AppSettings.Keys.history)
+        pruneStoredImages()
+    }
+
+    /// Deletes stored PNGs for image clips that have dropped out of the history.
+    ///
+    /// Without this, every image ever copied would stay on disk forever — the
+    /// history cap would bound what you can see but not what you are storing.
+    private func pruneStoredImages() {
+        let referenced = Set(
+            history
+                .filter { $0.kind == .image }
+                .compactMap { $0.paths.first }
+        )
+        ClipImageStore.pruneOrphans(keeping: referenced)
     }
 
     // MARK: - Monitoring

@@ -30,6 +30,11 @@ struct HistorySection: View {
                 ) {
                     clipboard.copy(clip)
                 }
+                // Dragging carries the *file URL* for files and images rather than
+                // their bytes, which is what makes a drop into Finder produce a
+                // real file instead of an inline blob — and it costs no re-encode,
+                // since the file already exists on disk.
+                .onDrag { dragProvider(for: clip) }
                 .contextMenu {
                     if clip.kind == .files, !clip.existingURLs.isEmpty {
                         Button("Show in Finder") {
@@ -43,6 +48,22 @@ struct HistorySection: View {
             }
         }
         .animation(Theme.subtle, value: clipboard.history)
+    }
+
+    /// The item handed to the system when a row is dragged out of the panel.
+    ///
+    /// Multi-file clips offer their first item: SwiftUI's `onDrag` yields a single
+    /// provider, so the alternative would be dragging nothing at all.
+    private func dragProvider(for clip: Clip) -> NSItemProvider {
+        switch clip.kind {
+        case .text:
+            return NSItemProvider(object: clip.text as NSString)
+        case .files, .image:
+            guard let url = clip.existingURLs.first else {
+                return NSItemProvider(object: clip.preview as NSString)
+            }
+            return NSItemProvider(contentsOf: url) ?? NSItemProvider(object: url as NSURL)
+        }
     }
 
     /// Only text clips are pinnable — a pin is a plain string, so a pinned file

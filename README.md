@@ -13,6 +13,8 @@ A tiny macOS menu bar app for the things you paste all day: pinned texts, recent
 - **Pinned texts** — up to four. Your email, your phone number, that boilerplate reply. Click to copy, with a brief in-row `Copied ✓`.
 - **Clipboard history** — the last 6 clips (configurable, 3–12), newest first. Fills automatically as you copy; click any entry to put it back on the clipboard.
 - **Files as well as text** — copy files or folders in Finder and they land in the history with their real Finder icons. Click one to put it back on the clipboard, then **⌘V to copy** or **⌥⌘V to move** it wherever you are.
+- **Images too** — copy a screenshot or an image from any app and it's kept as a thumbnail. Re-copying publishes both PNG and TIFF, so it pastes into browsers, chat apps, Preview and Finder alike.
+- **Drag any row out** — drop a clip straight into another app. Files and images carry their file URL, so a drop into Finder produces a real file.
 - **Catches cuts too** — ClipMate watches the pasteboard, so ⌘X is captured exactly like ⌘C, from any app.
 - **Optional Windows-style cut in Finder** — turn on one setting and ⌘X cuts files, ⌘V moves them. Off by default; it's the only feature that asks for Accessibility.
 - **Pin from the panel** — one click on a clip's pin button files it into the first free slot. Click again to un-pin. No slot picker, no trip to Settings.
@@ -22,6 +24,7 @@ A tiny macOS menu bar app for the things you paste all day: pinned texts, recent
 - **Two global hotkeys** — show/hide the panel (⌘2 by default) and take a screenshot without opening the panel first (⌘F1). Both re-recordable.
 - **Launch at login** — one toggle.
 - **Knows when files go missing** — a copied file that has since been deleted or moved is shown struck through and refuses to paste a dead reference.
+- **⌘C/⌘V work in the app itself** — an agent app gets no menu bar, which normally leaves its own text fields unable to copy or paste. ClipMate installs an Edit menu so editing works everywhere.
 
 ## Screenshots
 
@@ -107,6 +110,10 @@ Nothing ever leaves your machine — there is no network code in this app at all
 - **Storage** is `UserDefaults`, a handful of keys: `clipmate.pins`, `clipmate.history`, `clipmate.historySize`, `clipmate.screenshotToClipboard`, `clipmate.screenshotAskFirst`, `clipmate.screenshotChoiceRemembered`.
 - **Capture** polls `NSPasteboard.changeCount` once a second — a single integer comparison; the pasteboard is only read when something actually changed. Watching the pasteboard rather than keystrokes is what makes ⌘X work for free, and is why no Accessibility permission is needed.
 - **History is de-duplicated** — re-copying an old clip promotes it to the top instead of adding a second row.
+- **Read order is files → text → images.** A Finder copy also puts text on the pasteboard, so checking text first would record every file copy as a path string. Text is checked before images because apps that copy a picture often supply its URL as text too, and that is usually what you wanted; a real image copy carries no string and falls through.
+- **Image clips** are written as PNGs under `~/Library/Application Support/ClipMate/Images/`, never into `UserDefaults` — a Retina screenshot is megabytes, and defaults are loaded whole at launch. The history entry stores only the path, and files are pruned as soon as their clip drops out of the history.
+- **Copying an image back** publishes PNG **and** TIFF on a *single* pasteboard item. Receivers disagree — Preview and Finder reach for TIFF, browsers and chat apps for PNG — and one item carrying both lets each pick, so a paste never silently fails. Two items would instead look like two images.
+- **The app's own Edit menu** exists because `LSUIElement` apps get no menu bar, and AppKit routes key equivalents through `NSApp.mainMenu` rather than to the focused control. Its items set **no target**, so AppKit walks the responder chain and delivers them to whatever has focus — one menu, every text field, no per-field code.
 - **File clips** are read with `readObjects(forClasses: [NSURL.self])` and checked *before* the plain-text branch, because a Finder copy also puts a text representation on the pasteboard. Writing them back uses `writeObjects`, which publishes both the file-URL type Finder needs and a text fallback. History is stored as JSON so a file clip keeps its full path list; older plain-`[String]` histories migrate automatically.
 - **Copy-to-clipboard screenshots** use `screencapture -ic`, which hands the image to the clipboard without ever touching disk. The Desktop path deletes its target file if the capture doesn't succeed, so a cancelled capture leaves nothing behind.
 - **Finder cut & paste** uses a `CGEventTap` that swallows the keystroke and then does the slow work asynchronously, because a tap callback that blocks for too long gets disabled by the system. It re-enables itself if macOS disables it. Finder's selection and insertion location come from AppleScript; the move is plain `FileManager`, with collision renaming rather than overwriting.
@@ -114,7 +121,7 @@ Nothing ever leaves your machine — there is no network code in this app at all
 
 ## Non-goals
 
-No iCloud sync, no image clips, no accounts, no telemetry, no auto-updater. One third-party dependency ([KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts)) and nothing else. Keeping it small is the point.
+No iCloud sync, no accounts, no telemetry, no auto-updater. One third-party dependency ([KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts)) and nothing else. Keeping it small is the point.
 
 ## Contributing
 

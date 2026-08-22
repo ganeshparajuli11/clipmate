@@ -41,6 +41,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Lifecycle
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Must come first: without a main menu, ⌘C/⌘V/⌘X/⌘A/⌘Z do nothing in the
+        // app's own text fields, because AppKit routes key equivalents through
+        // the menu rather than straight to the focused control.
+        NSApp.mainMenu = MainMenuBuilder.build()
+
         configureStatusItem()
         configurePopover()
         configureHotkeys()
@@ -222,6 +227,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     // MARK: - Actions
+
+    /// Reached from the app menu's Settings… item via the responder chain.
+    @objc func openSettingsFromMenu(_ sender: Any?) {
+        openSettings()
+    }
 
     private func openSettings() {
         closePanel()

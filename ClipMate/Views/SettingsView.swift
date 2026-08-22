@@ -16,6 +16,9 @@ struct SettingsView: View {
     /// line updates as soon as the user grants Accessibility in System Settings.
     @State private var hasAccessibility = FinderCutService.hasAccessibilityPermission
 
+    /// Disk taken by stored image clips, refreshed when Settings appears.
+    @State private var imageDiskUsage: Int64 = 0
+
     var body: some View {
         Form {
             Section {
@@ -54,10 +57,18 @@ struct SettingsView: View {
                     clipboard.clearHistory()
                 }
                 .disabled(clipboard.history.isEmpty)
+
+                // Images are the only thing ClipMate writes outside UserDefaults,
+                // so it is worth showing what that costs.
+                if imageDiskUsage > 0 {
+                    Text("Stored images: \(ByteCountFormatter.string(fromByteCount: imageDiskUsage, countStyle: .file))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             } header: {
                 Text("Clipboard history")
             } footer: {
-                Text("History fills automatically as you copy or cut in any app — nothing is pre-filled. Text and copied files both appear; clipboard images are ignored.")
+                Text("History fills automatically as you copy or cut in any app — nothing is pre-filled. Text, copied files, and images are all captured. Drag any row out to drop it into another app.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -179,6 +190,7 @@ struct SettingsView: View {
             // behind our back, so re-read the real state each time this appears.
             settings.refreshLaunchAtLoginStatus()
             hasAccessibility = FinderCutService.hasAccessibilityPermission
+            imageDiskUsage = ClipImageStore.diskUsage()
         }
         // Granting Accessibility happens in System Settings, outside this window,
         // so poll while Settings is open rather than leaving a stale status.
