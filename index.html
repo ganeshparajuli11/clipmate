@@ -1,115 +1,256 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ClipMate | macOS Clipboard Companion</title>
-    <meta
-      name="description"
-      content="ClipMate is a lightweight macOS menu bar app for pinned text, clipboard history, and quick screenshots."
-    />
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <div class="background-orb orb-a"></div>
-    <div class="background-orb orb-b"></div>
-    <div class="background-orb orb-c"></div>
+<html lang="en" class="no-js">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ClipMate — clipboard history, pins &amp; screenshots for macOS</title>
+<meta name="description" content="A tiny macOS menu bar app: clipboard history for text, files and images, four pinned snippets, and one-key area screenshots. Free, open source, no telemetry." />
+<meta name="theme-color" content="#ff7a93" />
+<link rel="icon" href="./assets/clipmate-icon-128.png" />
+<meta property="og:title" content="ClipMate for macOS" />
+<meta property="og:description" content="Clipboard history, pinned snippets and quick screenshots — in one small menu bar app." />
+<meta property="og:image" content="./assets/clipmate-icon.png" />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./styles.css" />
+<script>
+  /* Swap no-js -> js before first paint. The reveal animation is scoped to .js,
+     so if scripting is unavailable — or the observer never fires, as happens in
+     some webviews and crawlers — the page still renders fully visible. */
+  document.documentElement.className = "js";
+</script>
+</head>
+<body>
 
-    <header class="glass navbar">
-      <div class="brand">ClipMate</div>
-      <nav>
-        <a href="#about">About</a>
-        <a href="#install">Install</a>
-        <a href="#usage">Use</a>
-        <a href="#download">Download</a>
-      </nav>
-    </header>
+<div class="orb orb-a" aria-hidden="true"></div>
+<div class="orb orb-b" aria-hidden="true"></div>
 
-    <main>
-      <section class="glass hero reveal">
-        <p class="chip">Built for macOS 13+ (Ventura and later)</p>
-        <h1>Your menu bar clipboard sidekick.</h1>
-        <p>
-          ClipMate keeps recent clipboard text, lets you pin what you paste most,
-          and adds one-key area screenshots.
-        </p>
-        <div class="hero-actions">
-          <a class="btn primary" href="#download">Get ClipMate</a>
-          <a class="btn" href="#about">Learn More</a>
-        </div>
-      </section>
+<header class="nav" id="nav">
+  <a class="brand" href="#top">
+    <img src="./assets/clipmate-icon-128.png" alt="" width="28" height="28" />
+    <span>ClipMate</span>
+  </a>
+  <nav class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#shortcuts">Shortcuts</a>
+    <a href="#permissions">Permissions</a>
+    <a href="#install">Install</a>
+  </nav>
+  <a class="btn btn-sm" href="https://github.com/ganeshparajuli11/clipmate">GitHub</a>
+</header>
 
-      <section id="about" class="glass section reveal">
-        <h2>About this project</h2>
-        <p>
-          ClipMate is a tiny Swift/SwiftUI menu bar app focused on speed and
-          simplicity: pinned snippets, recent clipboard history, and quick screenshot
-          capture without extra clutter.
-        </p>
-        <div class="grid">
-          <article class="card">
-            <h3>Pinned Texts</h3>
-            <p>Store up to four frequently used snippets and copy them in one click.</p>
-          </article>
-          <article class="card">
-            <h3>Clipboard History</h3>
-            <p>Automatically track recent copied and cut text with de-duplication.</p>
-          </article>
-          <article class="card">
-            <h3>Quick Screenshots</h3>
-            <p>Capture a selected area, then save to Desktop or copy directly.</p>
-          </article>
-        </div>
-      </section>
+<main id="top">
 
-      <section id="install" class="glass section reveal">
-        <h2>Installation & running</h2>
-        <ol class="steps">
-          <li>Download <strong>ClipMate.dmg</strong> from the latest release.</li>
-          <li>Open the DMG and drag <strong>ClipMate</strong> into Applications.</li>
-          <li>
-            First launch: right-click ClipMate and choose <strong>Open</strong> to pass
-            Gatekeeper for self-signed apps.
-          </li>
-          <li>The app appears in the menu bar. Open settings from the gear icon.</li>
-        </ol>
-        <p class="muted">
-          Want to build from source? Open <code>ClipMate.xcodeproj</code> in Xcode and run
-          with <code>⌘R</code>.
-        </p>
-      </section>
-
-      <section id="usage" class="glass section reveal">
-        <h2>How to use ClipMate</h2>
-        <ul class="steps">
-          <li>Copy text normally (⌘C / ⌘X) to fill history.</li>
-          <li>Click any history item to copy it back to clipboard.</li>
-          <li>Pin important snippets from settings or directly from history.</li>
-          <li>Use screenshot action to capture an area and save or copy instantly.</li>
-        </ul>
-      </section>
-
-      <section id="download" class="glass section cta reveal">
-        <h2>Download ClipMate</h2>
-        <p>Get the latest macOS build and start using ClipMate in minutes.</p>
-        <a
-          class="btn primary large"
-          href="https://github.com/ganeshparajuli11/clipmate/releases/latest"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Download from GitHub Releases
-        </a>
-      </section>
-    </main>
-
-    <footer class="glass footer">
-      <p>
-        © 2026 ClipMate •
-        <a href="https://github.com/ganeshparajuli11/clipmate" target="_blank" rel="noopener noreferrer">Open source on GitHub</a>
+  <!-- ───────────────────────── hero ───────────────────────── -->
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="chip"><span class="dot"></span> v1.4 &middot; macOS 13 Ventura or later</span>
+      <h1>Everything you copied,<br /><span class="grad">one keystroke away.</span></h1>
+      <p class="lede">
+        ClipMate lives in your menu bar and remembers the last 10 things you copied —
+        text, files, images, even your own screenshots. Pin what you paste every day.
+        Grab a screen area without reaching for another app.
       </p>
-    </footer>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/ganeshparajuli11/clipmate/releases/latest/download/ClipMate.dmg">
+          Download for macOS
+        </a>
+        <a class="btn" href="#install">How to install</a>
+      </div>
+      <p class="fineprint">Free and open source (MIT) &middot; ~940&nbsp;KB &middot; Apple silicon &amp; Intel</p>
+    </div>
 
-    <script src="./script.js"></script>
-  </body>
+    <!-- The panel, drawn in CSS rather than screenshotted, so it stays crisp -->
+    <div class="hero-art" aria-hidden="true">
+      <div class="panel">
+        <div class="panel-caret"></div>
+        <div class="panel-head">Pinned</div>
+        <div class="row"><span class="ico pin">&#128204;</span><span class="lbl">hello@example.com</span><span class="pinbtn on">&#128204;</span></div>
+        <div class="sep"></div>
+        <div class="panel-head">Recent <span class="clear">Clear</span></div>
+        <div class="row"><span class="ico thumb"></span><span class="lbl">Image&nbsp; 2400 × 1260</span></div>
+        <div class="row"><span class="ico folder">&#128193;</span><span class="lbl">Q3-report.pdf&nbsp; +2 more</span></div>
+        <div class="row"><span class="ico doc">&#128203;</span><span class="lbl mono">npm run build --prod</span><span class="pinbtn">&#128204;</span></div>
+        <div class="row"><span class="ico doc">&#128203;</span><span class="lbl mono">git rebase -i HEAD~3</span><span class="pinbtn">&#128204;</span></div>
+        <div class="sep"></div>
+        <div class="panel-foot"><span class="fbtn">&#128247;</span><span class="fbtn right">&#9881;</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── features ───────────────────────── -->
+  <section id="features" class="section">
+    <div class="section-head reveal">
+      <h2>One app instead of four</h2>
+      <p>Clipboard manager, snippet keeper, screenshot tool and Finder helper — all in a 940&nbsp;KB menu bar icon.</p>
+    </div>
+
+    <div class="grid">
+      <article class="card reveal">
+        <div class="card-ico">&#128203;</div>
+        <h3>Clipboard history</h3>
+        <p>The last 10 clips, newest first, de-duplicated. Re-copying an old clip promotes it rather than adding a second row. Configurable from 3 to 12.</p>
+      </article>
+
+      <article class="card reveal">
+        <div class="card-ico">&#128206;</div>
+        <h3>Text, files <em>and</em> images</h3>
+        <p>Copy a paragraph, a folder, or a screenshot — all land in the same list. Files show their real Finder icon; images show a thumbnail and pixel size.</p>
+      </article>
+
+      <article class="card reveal">
+        <div class="card-ico">&#128204;</div>
+        <h3>Four pins</h3>
+        <p>Your email, your phone number, that boilerplate reply. Click the pin on any clip to keep it forever. Click again to release it.</p>
+      </article>
+
+      <article class="card reveal">
+        <div class="card-ico">&#128247;</div>
+        <h3>Area screenshots</h3>
+        <p>Drag-select any region with <span class="combo"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>D</kbd></span>. Save a timestamped PNG to the Desktop or copy it straight to the clipboard — your choice, remembered.</p>
+      </article>
+
+      <article class="card reveal">
+        <div class="card-ico">&#9986;</div>
+        <h3>Windows-style cut in Finder</h3>
+        <p>Optional. Turn it on and <span class="combo"><kbd>⌘</kbd><kbd>X</kbd></span> cuts files while <span class="combo"><kbd>⌘</kbd><kbd>V</kbd></span> moves them — no more <span class="combo"><kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd></span>. Off by default.</p>
+      </article>
+
+      <article class="card reveal">
+        <div class="card-ico">&#128228;</div>
+        <h3>Drag straight out</h3>
+        <p>Drag any row into another app. Files and images carry their file URL, so a drop into Finder produces a real file — not an inline blob.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── shortcuts ───────────────────────── -->
+  <section id="shortcuts" class="section">
+    <div class="section-head reveal">
+      <h2>Two shortcuts, both yours to change</h2>
+      <p>Defaults chosen to dodge keys macOS has already claimed.</p>
+    </div>
+
+    <div class="keys reveal">
+      <div class="keyrow">
+        <div class="keycombo"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>E</kbd></div>
+        <div class="keydesc">
+          <strong>Show the panel</strong>
+          <span>ClipMate's answer to Windows' <span class="combo"><kbd class="tiny">Win</kbd>+<kbd class="tiny">V</kbd></span>.</span>
+        </div>
+      </div>
+      <div class="keyrow">
+        <div class="keycombo"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>D</kbd></div>
+        <div class="keydesc">
+          <strong>Take a screenshot</strong>
+          <span>Starts the crosshair immediately, without opening the panel.</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="note reveal">
+      <strong>Why not ⌘F1?</strong> macOS reserves it for display mirroring, so the keystroke never
+      reaches an app at all. <strong>Heads-up:</strong> ⇧⌘D shadows Finder's “go to Desktop” while
+      ClipMate runs — re-record it in Settings if you use that.
+    </p>
+  </section>
+
+  <!-- ───────────────────────── permissions ───────────────────────── -->
+  <section id="permissions" class="section">
+    <div class="section-head reveal">
+      <h2>What it asks for</h2>
+      <p>Almost nothing. There is no network code in this app at all — nothing ever leaves your Mac.</p>
+    </div>
+
+    <div class="table-wrap reveal">
+      <table class="perms">
+        <thead><tr><th>Permission</th><th>Needed?</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>Notifications</td><td><span class="tag no">Never</span></td><td>Confirmations appear inside the panel instead.</td></tr>
+          <tr><td>Full Disk Access</td><td><span class="tag no">Never</span></td><td>Nothing is read outside the app's own preferences.</td></tr>
+          <tr><td>Screen Recording</td><td><span class="tag once">Once</span></td><td>The first time you take a screenshot. macOS shows the prompt itself.</td></tr>
+          <tr><td>Accessibility</td><td><span class="tag opt">Opt-in</span></td><td>Only if you switch on Finder cut &amp; paste. Intercepting ⌘X is impossible without it.</td></tr>
+          <tr><td>Automation (Finder)</td><td><span class="tag opt">Opt-in</span></td><td>Same feature only — reads the Finder selection and current folder.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── install ───────────────────────── -->
+  <section id="install" class="section">
+    <div class="section-head reveal">
+      <h2>Install in a minute</h2>
+    </div>
+
+    <div class="steps reveal">
+      <div class="step"><span class="num">1</span><div><strong>Download the DMG</strong><p>Open it and drag ClipMate onto the Applications shortcut.</p></div></div>
+      <div class="step"><span class="num">2</span><div><strong>Right-click ▸ Open</strong><p>Just the first time. ClipMate is signed but not notarized, so macOS asks you to confirm once.</p></div></div>
+      <div class="step"><span class="num">3</span><div><strong>Press ⇧⌘E</strong><p>The panel appears. Copy a few things and they show up. Open Settings from the gear to turn on launch-at-login.</p></div></div>
+    </div>
+
+    <div class="cta center reveal">
+      <a class="btn btn-primary" href="https://github.com/ganeshparajuli11/clipmate/releases/latest/download/ClipMate.dmg">Download ClipMate.dmg</a>
+      <a class="btn" href="https://github.com/ganeshparajuli11/clipmate/releases">All releases</a>
+    </div>
+
+    <div class="build reveal">
+      <h3>Or build it yourself</h3>
+      <p>Nothing to trust, nothing hidden — one dependency and about a thousand lines of Swift.</p>
+      <pre><code>git clone https://github.com/ganeshparajuli11/clipmate.git
+cd clipmate
+open ClipMate.xcodeproj    <span class="cmt"># then press ⌘R</span></code></pre>
+      <p class="small">The project signs with a local certificate named <code>ClipMate Self-Signed</code>. If you don't have one, set Signing to <em>Sign to Run Locally</em> in Xcode — see the README for why it exists.</p>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── how it works ───────────────────────── -->
+  <section class="section">
+    <div class="section-head reveal">
+      <h2>How it works</h2>
+      <p>No database, no accounts, no background uploads.</p>
+    </div>
+    <div class="grid two reveal">
+      <article class="card flat">
+        <h3>Capture</h3>
+        <p>A one-second timer compares <code>NSPasteboard.changeCount</code> — a single integer. The clipboard is only actually read when something changed. Watching the pasteboard rather than your keystrokes is why cuts are captured too, and why no Accessibility permission is needed.</p>
+      </article>
+      <article class="card flat">
+        <h3>Storage</h3>
+        <p>Text and file paths live in <code>UserDefaults</code>. Images are written as PNGs in Application Support and pruned the moment they drop out of history — a Retina screenshot is far too big for a preferences file.</p>
+      </article>
+      <article class="card flat">
+        <h3>Pasting images</h3>
+        <p>Copying an image back publishes PNG <em>and</em> TIFF on a single pasteboard item. Receivers disagree — Preview reaches for TIFF, browsers for PNG — and one item carrying both means a paste never silently fails.</p>
+      </article>
+      <article class="card flat">
+        <h3>Privacy</h3>
+        <p>Everything stays on your Mac. There is no networking code in the app, no analytics, no auto-updater and no account. Clear the history any time from Settings or the panel.</p>
+      </article>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <img src="./assets/clipmate-icon-128.png" alt="" width="32" height="32" />
+      <div>
+        <strong>ClipMate</strong>
+        <span>MIT licensed &middot; built with Swift &amp; SwiftUI</span>
+      </div>
+    </div>
+    <div class="foot-links">
+      <a href="https://github.com/ganeshparajuli11/clipmate">Source</a>
+      <a href="https://github.com/ganeshparajuli11/clipmate/releases">Releases</a>
+      <a href="https://github.com/ganeshparajuli11/clipmate/issues">Report an issue</a>
+      <a href="https://github.com/ganeshparajuli11/clipmate/blob/main/LICENSE">License</a>
+    </div>
+  </div>
+</footer>
+
+<script src="./script.js"></script>
+</body>
 </html>
