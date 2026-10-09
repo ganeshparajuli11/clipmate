@@ -5,15 +5,20 @@ name: Build & Release
 # - Push a tag like `v1.5.0`          → normal release (becomes "latest").
 # - Push a tag like `v1.5.0-beta.1`   → pre-release, for testing; the README's
 #                                       "latest" download link is untouched.
-# - Run manually (Actions tab)        → just builds; the DMG is attached to the
+# - Push to main / open a PR / run manually → just builds; the DMG is attached to the
 #                                       run as an artifact.
 on:
   push:
     tags: ['v*']
+    branches: [main]     # build-check every change to main (no release)
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: write
+
+env:
+  HAS_APPLE_ID: ${{ secrets.APPLE_ID != '' }}
 
 jobs:
   build:
@@ -39,15 +44,23 @@ jobs:
             CODE_SIGN_IDENTITY="-" CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="" \
             build | tee build.log
 
-      # Without the secrets below the app is ad-hoc signed: it works, but macOS
-      # shows "Apple could not verify…" on first launch (see the release notes).
-      # With an Apple Developer ID (paid Apple Developer Program) add these repo
-      # secrets and every release is signed + notarized, so it opens normally:
-      #   DEVELOPER_ID_CERT_P12      base64 of your "Developer ID Application" .p12
+      # Code signing decides whether macOS remembers ClipMate's permissions
+      # across updates. macOS ties Accessibility / Screen Recording to the
+      # signature: with ad-hoc signing every build is a "new app" and users must
+      # re-allow (or use ClipMate's "Fix Permission" button) after each update.
+      #
+      # Add these repo secrets (Settings ▸ Secrets and variables ▸ Actions):
+      #   DEVELOPER_ID_CERT_P12      base64 of a code-signing .p12 — EITHER
+      #                              • a free self-signed certificate (Keychain
+      #                                Access ▸ Certificate Assistant ▸ Create a
+      #                                Certificate…, type "Code Signing"): permissions
+      #                                then survive updates; or
+      #                              • a paid "Developer ID Application" certificate:
+      #                                permissions survive AND the "Apple could not
+      #                                verify" warning disappears (with notarization).
       #   DEVELOPER_ID_CERT_PASSWORD password of that .p12
-      #   APPLE_ID                   your Apple ID email
-      #   APPLE_TEAM_ID              your 10-character team ID
-      #   APPLE_APP_PASSWORD         an app-specific password from account.apple.com
+      # Notarization (Developer ID only):
+      #   APPLE_ID, APPLE_TEAM_ID, APPLE_APP_PASSWORD
       - name: Sign app
         env:
           CERT_P12: ${{ secrets.DEVELOPER_ID_CERT_P12 }}
@@ -63,16 +76,30 @@ jobs:
             security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$CERT_PASSWORD" -T /usr/bin/codesign
             security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k ci "$KEYCHAIN"
             security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
-            IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" | grep "Developer ID Application" | head -1 | awk -F'"' '{print $2}')
-            codesign --force --deep --options runtime --timestamp \
+
+            # A self-signed certificate must be trusted for code signing on the
+            # runner, or codesign refuses it. (Developer ID is trusted already.)
+            openssl pkcs12 -in "$RUNNER_TEMP/cert.p12" -clcerts -nokeys -passin env:CERT_PASSWORD -legacy -out "$RUNNER_TEMP/cert.pem" 2>/dev/null \
+              || openssl pkcs12 -in "$RUNNER_TEMP/cert.p12" -clcerts -nokeys -passin env:CERT_PASSWORD -out "$RUNNER_TEMP/cert.pem"
+            if ! grep -q "Developer ID" <(openssl x509 -in "$RUNNER_TEMP/cert.pem" -noout -subject); then
+              sudo security add-trusted-cert -d -r trustRoot -p codeSign -k /Library/Keychains/System.keychain "$RUNNER_TEMP/cert.pem"
+            fi
+
+            IDENTITY=$(security find-identity -p codesigning "$KEYCHAIN" | grep -m1 '"' | awk -F'"' '{print $2}')
+            echo "Signing with: $IDENTITY"
+            TIMESTAMP="--timestamp=none"
+            [[ "$IDENTITY" == "Developer ID Application"* ]] && TIMESTAMP="--timestamp"
+            codesign --force --deep --options runtime $TIMESTAMP \
               --entitlements ClipMate/ClipMate.entitlements --sign "$IDENTITY" "$APP"
-            echo "SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
-            echo "Signed with Developer ID."
+            if [[ "$IDENTITY" == "Developer ID Application"* ]]; then
+              echo "SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+            fi
           else
             codesign --force --deep --sign - "$APP"
-            echo "::warning::No Developer ID secrets — app is ad-hoc signed and macOS will warn on first launch."
+            echo "::warning::No signing certificate secret — app is ad-hoc signed. macOS will warn on first launch and ask for permissions again after every update."
           fi
           codesign --verify --verbose "$APP"
+          codesign -d -r- "$APP" || true
 
       - name: Package DMG
         run: |
@@ -83,7 +110,7 @@ jobs:
           hdiutil create -volname ClipMate -srcfolder dmg -ov -format UDZO ClipMate.dmg
 
       - name: Notarize DMG
-        if: env.SIGN_IDENTITY != ''
+        if: env.SIGN_IDENTITY != '' && env.HAS_APPLE_ID == 'true'
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}

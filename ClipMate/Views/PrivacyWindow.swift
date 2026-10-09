@@ -45,6 +45,13 @@ struct PrivacyView: View {
                 }
             }
 
+            if !(granted[.screenRecording] ?? true) {
+                Text("Just switched Screen Recording on? macOS applies it after ClipMate restarts.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Button("Reopen ClipMate") { AppRelauncher.relaunch() }
+            }
+
             HStack {
                 Text("You can reopen this from Settings ▸ Privacy & Permissions.")
                     .font(.caption)
@@ -109,8 +116,16 @@ struct PrivacyView: View {
                     .foregroundStyle(.green)
                     .fixedSize()
             } else {
-                Button("Allow…") { permission.request() }
-                    .fixedSize()
+                VStack(alignment: .trailing, spacing: 4) {
+                    Button("Allow…") { permission.request() }
+                    // The switch may already be on — for an older copy of
+                    // ClipMate. This clears those entries and asks again.
+                    Button("Already on? Fix") { permission.repair() }
+                        .buttonStyle(.link)
+                        .font(.caption)
+                        .help("Removes ClipMate's old entries from System Settings and asks again for this copy")
+                }
+                .fixedSize()
             }
         }
         .padding(12)

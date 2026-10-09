@@ -85,6 +85,12 @@ Or, in Terminal: `xattr -dr com.apple.quarantine /Applications/ClipMate.app`
 
 **To remove the warning for everyone:** join the Apple Developer Program, then add the `DEVELOPER_ID_CERT_P12`, `DEVELOPER_ID_CERT_PASSWORD`, `APPLE_ID`, `APPLE_TEAM_ID` and `APPLE_APP_PASSWORD` secrets to this repo. The release workflow (`.github/workflows/release.yml`) then signs with your Developer ID, enables the hardened runtime and notarizes every release automatically.
 
+### Permissions keep asking, even though ClipMate is switched on
+
+macOS remembers a permission against an app's **code signature**. Builds without a stable certificate get a new signature every time, so after an update the "ClipMate" switch in System Settings belongs to the *old* copy and the new one isn't allowed. ClipMate detects this: it shows **"… isn't active for this copy of ClipMate"** with a **Fix Permission** button (also in Settings and in *Privacy & Permissions*). That removes ClipMate's old entries with Apple's `tccutil` and asks again — switch ClipMate on once more and you're done. Screen Recording also needs **Reopen ClipMate** afterwards, which macOS requires.
+
+To make permissions survive updates, sign releases with a stable certificate — see the comments in `.github/workflows/release.yml` (a free self-signed certificate is enough for this).
+
 ### Releasing
 
 Push a tag: `v1.5.0` publishes a normal release, `v1.5.0-beta.1` a pre-release. GitHub Actions builds a universal `ClipMate.dmg` and attaches it.

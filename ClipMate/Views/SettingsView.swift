@@ -116,9 +116,13 @@ struct SettingsView: View {
                         .foregroundStyle(.orange)
                         .fixedSize(horizontal: false, vertical: true)
 
-                        Button("Open Accessibility Settings…") {
-                            FinderCutService.requestAccessibilityPermission()
-                            FinderCutService.openAccessibilitySettings()
+                        HStack {
+                            Button("Open Accessibility Settings…") {
+                                FinderCutService.requestAccessibilityPermission()
+                                FinderCutService.openAccessibilitySettings()
+                            }
+                            Button("Already on? Fix") { Permission.accessibility.repair() }
+                                .help("Removes ClipMate's old entries from System Settings and asks again for this copy")
                         }
                     }
 
@@ -278,9 +282,15 @@ struct SettingsView: View {
                     Label("Needs Accessibility permission to close banners.", systemImage: "exclamationmark.triangle.fill")
                         .font(.caption)
                         .foregroundStyle(.orange)
-                    Button("Open Accessibility Settings…") {
-                        FinderCutService.requestAccessibilityPermission()
-                        FinderCutService.openAccessibilitySettings()
+                    Text("Already switched on in System Settings? That switch belongs to an older copy of ClipMate — click Fix to replace it.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    HStack {
+                        Button("Fix Permission") { Permission.accessibility.repair() }
+                        Button("Open Accessibility Settings…") {
+                            Permission.accessibility.openSystemSettings()
+                        }
                     }
                 }
             }
@@ -314,6 +324,23 @@ struct SettingsView: View {
             }
 
             Toggle("Keep hidden notifications in the panel", isOn: $notifications.keepHiddenInPanel)
+
+            HStack {
+                Button("Send test notification") {
+                    notifications.sendTestBanner()
+                }
+                .help("Shows a test banner from Script Editor. Hide “Script Editor” above to check filtering works.")
+
+                Button("Test & copy report") {
+                    notifications.sendTestBanner()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        let report = notifications.diagnosticReport()
+                        clipboard.copy(text: report)
+                        HUD.show("Diagnostic report copied — paste it to the developer", symbol: "stethoscope")
+                    }
+                }
+                .help("Sends a test banner, then copies a report of what Notification Center exposes (no message contents beyond 40 characters). Paste it in an issue if filtering doesn't work on your macOS version.")
+            }
 
             Button("Open macOS Notification Settings…") {
                 NotificationFilterService.openSystemNotificationSettings()

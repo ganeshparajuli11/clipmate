@@ -307,12 +307,28 @@ final class NotificationFilterService: ObservableObject {
         }
     }
 
-    /// The full-height sidebar (click the clock) holds your notification history
-    /// and widgets. Leave it alone — only transient banners are filtered.
+    /// The Notification Center sidebar (click the clock) holds your notification
+    /// history and widgets. Leave it alone — only transient banners are filtered.
+    ///
+    /// On recent macOS the banner window can be as tall as the screen, so window
+    /// size says nothing. The sidebar is the only place with widgets, so the
+    /// presence of a widget is what identifies it.
     private func isNotificationCenterSidebar(_ window: AXUIElement) -> Bool {
-        guard let size = AX.size(of: window) else { return false }
-        let screenHeight = NSScreen.main?.frame.height ?? 900
-        return size.height > screenHeight * 0.6
+        containsWidget(window, depth: 0)
+    }
+
+    private func containsWidget(_ element: AXUIElement, depth: Int) -> Bool {
+        guard depth < 7 else { return false }
+        let markers: [String?] = [
+            AX.attribute(element, kAXSubroleAttribute),
+            AX.attribute(element, kAXIdentifierAttribute),
+            AX.attribute(element, kAXRoleDescriptionAttribute)
+        ]
+        if markers.contains(where: { $0?.localizedCaseInsensitiveContains("widget") == true }) {
+            return true
+        }
+        let children: [AXUIElement] = AX.attribute(element, kAXChildrenAttribute) ?? []
+        return children.contains { containsWidget($0, depth: depth + 1) }
     }
 
     private func collectBanners(in element: AXUIElement, depth: Int, into result: inout [AXUIElement]) {
@@ -384,6 +400,74 @@ final class NotificationFilterService: ObservableObject {
     private func pruneRecentlyHandled() {
         let cutoff = Date().addingTimeInterval(-30)
         recentlyHandled = recentlyHandled.filter { $0.value > cutoff }
+    }
+
+    // MARK: - Diagnostics
+
+    /// Posts a harmless test banner (from Script Editor, via AppleScript), so the
+    /// filter can be tried without waiting for a real notification. ClipMate
+    /// itself never posts notifications, so it never needs that permission.
+    func sendTestBanner() {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        process.arguments = [
+            "-e",
+            "display notification \"If you can read this for more than a moment, ClipMate did not hide it.\" with title \"ClipMate test\""
+        ]
+        try? process.run()
+    }
+
+    /// A text dump of what Notification Center exposes right now — roles,
+    /// subroles, descriptions and actions, **no notification text beyond the
+    /// first 40 characters**. Used to adapt the filter to a new macOS version.
+    func diagnosticReport() -> String {
+        var lines: [String] = []
+        let version = ProcessInfo.processInfo.operatingSystemVersionString
+        lines.append("ClipMate \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") — macOS \(version)")
+        lines.append("Accessibility allowed: \(Self.hasAccessibilityPermission)")
+        lines.append("Mode: \(mode.rawValue), running: \(isRunning), hidden so far: \(hiddenCount)")
+
+        guard let app = NSRunningApplication
+            .runningApplications(withBundleIdentifier: Self.notificationCenterBundleID).first else {
+            lines.append("Notification Center process not found.")
+            return lines.joined(separator: "\n")
+        }
+        let element = AXUIElementCreateApplication(app.processIdentifier)
+        _ = AXUIElementSetMessagingTimeout(element, 0.5)
+        let windows: [AXUIElement] = AX.attribute(element, kAXWindowsAttribute) ?? []
+        lines.append("Windows: \(windows.count)")
+        for (index, window) in windows.enumerated() {
+            let size = AX.size(of: window).map { "\(Int($0.width))×\(Int($0.height))" } ?? "?"
+            lines.append("Window \(index) \(size) sidebar=\(isNotificationCenterSidebar(window))")
+            dump(window, depth: 1, into: &lines)
+            var banners: [AXUIElement] = []
+            collectBanners(in: window, depth: 0, into: &banners)
+            lines.append("  → banners detected: \(banners.count)")
+            for banner in banners {
+                let info = Self.readBanner(banner)
+                lines.append("    app=\"\(info.app)\" title=\"\(info.title.prefix(40))\" closeAction=\(Self.closeActionName(for: banner) ?? "none")")
+            }
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    private func dump(_ element: AXUIElement, depth: Int, into lines: inout [String]) {
+        guard depth < 12, lines.count < 400 else { return }
+        let role: String = AX.attribute(element, kAXRoleAttribute) ?? "?"
+        let subrole: String = AX.attribute(element, kAXSubroleAttribute) ?? ""
+        let identifier: String = AX.attribute(element, kAXIdentifierAttribute) ?? ""
+        let description: String = AX.attribute(element, kAXDescriptionAttribute) ?? ""
+        var namesRef: CFArray?
+        _ = AXUIElementCopyActionNames(element, &namesRef)
+        let actions = ((namesRef as? [String]) ?? [])
+            .map { $0.components(separatedBy: "\n").first ?? $0 }
+            .joined(separator: ",")
+        let indent = String(repeating: "  ", count: depth)
+        lines.append("\(indent)\(role) [\(subrole)] id=\(identifier) desc=\"\(description.prefix(40))\" actions=\(actions)")
+        let children: [AXUIElement] = AX.attribute(element, kAXChildrenAttribute) ?? []
+        for child in children {
+            dump(child, depth: depth + 1, into: &lines)
+        }
     }
 
     // MARK: - Reading a banner

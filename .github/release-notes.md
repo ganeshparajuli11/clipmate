@@ -6,6 +6,9 @@
 
 - **Privacy & Permissions screen** — on first launch ClipMate lists exactly what it keeps and what each permission is for. Permissions are only requested when you first use a feature that needs them, after a plain-language explanation (nothing is requested at launch).
 
+- **Permissions that keep asking are now fixed in-app** — if macOS shows ClipMate switched on but this copy isn't allowed (every update is a new app to macOS), ClipMate says so and offers **Fix Permission** and **Reopen ClipMate** instead of triggering the system prompt over and over.
+- **Notification control on macOS Tahoe** — banners are found on full-height Notification Center windows, plus **Send test notification** and **Test & copy report** in Settings for troubleshooting.
+
 ## Install
 
 1. Download **ClipMate.dmg** below, open it, and drag ClipMate into Applications.
