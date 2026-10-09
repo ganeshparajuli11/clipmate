@@ -34,6 +34,8 @@
 		CB17000000000000000001A8 /* HUDWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000001A7 /* HUDWindow.swift */; };
 		CB17000000000000000001AA /* QuickTogglesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000001A9 /* QuickTogglesSection.swift */; };
 		CB17000000000000000001AC /* HiddenNotificationsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000001AB /* HiddenNotificationsSection.swift */; };
+		CB17000000000000000001AE /* Permissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000001AD /* Permissions.swift */; };
+		CB17000000000000000001B2 /* PrivacyWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000001B1 /* PrivacyWindow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +67,8 @@
 		CB17000000000000000001A7 /* HUDWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDWindow.swift; sourceTree = "<group>"; };
 		CB17000000000000000001A9 /* QuickTogglesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickTogglesSection.swift; sourceTree = "<group>"; };
 		CB17000000000000000001AB /* HiddenNotificationsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenNotificationsSection.swift; sourceTree = "<group>"; };
+		CB17000000000000000001AD /* Permissions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Permissions.swift; sourceTree = "<group>"; };
+		CB17000000000000000001B1 /* PrivacyWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyWindow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +123,7 @@
 				CB1700000000000000000020 /* ClipboardManager.swift */,
 				CB1700000000000000000022 /* Pasteboard.swift */,
 				CB1700000000000000000024 /* ScreenshotService.swift */,
+				CB17000000000000000001AD /* Permissions.swift */,
 				CB17000000000000000001A5 /* NotificationFilterService.swift */,
 				CB17000000000000000001A3 /* KeepAwakeService.swift */,
 				CB17000000000000000001A1 /* TextRecognizer.swift */,
@@ -138,6 +143,7 @@
 				CB1700000000000000000030 /* SettingsView.swift */,
 				CB1700000000000000000032 /* SettingsWindowController.swift */,
 				CB1700000000000000000034 /* Theme.swift */,
+				CB17000000000000000001B1 /* PrivacyWindow.swift */,
 				CB17000000000000000001AB /* HiddenNotificationsSection.swift */,
 				CB17000000000000000001A9 /* QuickTogglesSection.swift */,
 				CB17000000000000000001A7 /* HUDWindow.swift */,
@@ -238,6 +244,8 @@
 				CB1700000000000000000031 /* SettingsView.swift in Sources */,
 				CB1700000000000000000033 /* SettingsWindowController.swift in Sources */,
 				CB1700000000000000000035 /* Theme.swift in Sources */,
+				CB17000000000000000001B2 /* PrivacyWindow.swift in Sources */,
+				CB17000000000000000001AE /* Permissions.swift in Sources */,
 				CB17000000000000000001AC /* HiddenNotificationsSection.swift in Sources */,
 				CB17000000000000000001AA /* QuickTogglesSection.swift in Sources */,
 				CB17000000000000000001A8 /* HUDWindow.swift in Sources */,

@@ -81,6 +81,19 @@ final class NotificationFilterService: ObservableObject {
         didSet {
             defaults.set(mode.rawValue, forKey: Keys.mode)
             applyMode()
+
+            // Turning the feature on for the first time explains exactly what will
+            // be read and asks for consent before Accessibility is requested.
+            // Deferred a tick so the alert isn't shown from inside a SwiftUI
+            // binding update. Declining puts everything back to "Show all".
+            if oldValue == .showAll, mode != .showAll {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    if !PermissionExplainer.confirmNotificationAccess() {
+                        self.mode = .showAll
+                    }
+                }
+            }
         }
     }
 

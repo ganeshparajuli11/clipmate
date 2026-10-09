@@ -55,6 +55,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         configureFinderCut()
         configureKeepAwake()
         configureNotificationFilter()
+
+        // First launch: say what ClipMate keeps and which permissions it may ask
+        // for, before anything is asked.
+        if PrivacyWindowController.shouldShowOnLaunch {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                PrivacyWindowController.shared.present()
+            }
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -322,17 +330,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func configureNotificationFilter() {
         notifications.applyMode()
 
-        // Switching away from "Show all" is what asks for Accessibility — never
-        // before. Once granted, watching starts on its own.
-        notifications.$mode
-            .dropFirst()
-            .receive(on: RunLoop.main)
-            .sink { mode in
-                if mode != .showAll, !NotificationFilterService.hasAccessibilityPermission {
-                    FinderCutService.requestAccessibilityPermission()
-                }
-            }
-            .store(in: &cancellables)
+        // Switching away from "Show all" is what asks for consent and then for
+        // Accessibility (see `NotificationFilterService.mode`) — never before.
 
         // Accessibility is granted in System Settings, outside the app; notice it
         // and start without needing a relaunch.
@@ -363,6 +362,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// screen and the text in it lands on the clipboard (and in the history).
     private func captureText() {
         closePanel()
+        guard PermissionExplainer.prepareForScreenCapture() else { return }
         Task { @MainActor [weak self] in
             switch await TextRecognizer.captureTextFromScreen() {
             case .recognized(let text):
@@ -406,6 +406,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func takeScreenshot() {
         // The panel would otherwise sit on top of the area being captured.
         closePanel()
+
+        // First time without Screen Recording: say what will be captured before
+        // macOS asks.
+        guard PermissionExplainer.prepareForScreenCapture() else { return }
 
         guard settings.shouldAskForScreenshotDestination else {
             performCapture(to: settings.screenshotDestination)
