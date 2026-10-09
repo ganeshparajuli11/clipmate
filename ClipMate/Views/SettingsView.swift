@@ -303,12 +303,24 @@ struct SettingsView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
+                if !notifications.knownApps.isEmpty {
+                    Text("Switch an app **off** to hide its banners. On = banners show as normal.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
                 ForEach(notifications.knownApps, id: \.self) { app in
+                    let hidden = notifications.isHidden(app)
                     Toggle(isOn: Binding(
                         get: { !notifications.isHidden(app) },
                         set: { notifications.setApp(app, hidden: !$0) }
                     )) {
-                        Text(app)
+                        HStack(spacing: 6) {
+                            Text(app)
+                            Text(hidden ? "Hidden" : "Shown")
+                                .font(.caption)
+                                .foregroundStyle(hidden ? Color.orange : Color.secondary)
+                        }
                     }
                     .contextMenu {
                         Button("Remove from list") { notifications.forgetApp(app) }

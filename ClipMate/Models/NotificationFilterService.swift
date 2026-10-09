@@ -310,25 +310,30 @@ final class NotificationFilterService: ObservableObject {
     /// The Notification Center sidebar (click the clock) holds your notification
     /// history and widgets. Leave it alone — only transient banners are filtered.
     ///
-    /// On recent macOS the banner window can be as tall as the screen, so window
-    /// size says nothing. The sidebar is the only place with widgets, so the
-    /// presence of a widget is what identifies it.
+    /// Window size can't tell them apart: on macOS 15/26 the pop-up banner lives
+    /// in a full-screen window. Nor can the word "widget" on its own — that same
+    /// banner window always carries an empty `widgets-overlay-view`, and desktop
+    /// widgets are separate Notification Center windows. What only the sidebar
+    /// has is an actual widget (`widget-local:…`) in the same window as
+    /// notifications.
     private func isNotificationCenterSidebar(_ window: AXUIElement) -> Bool {
-        containsWidget(window, depth: 0)
+        containsRealWidget(window, depth: 0)
     }
 
-    private func containsWidget(_ element: AXUIElement, depth: Int) -> Bool {
+    private func containsRealWidget(_ element: AXUIElement, depth: Int) -> Bool {
         guard depth < 7 else { return false }
-        let markers: [String?] = [
-            AX.attribute(element, kAXSubroleAttribute),
-            AX.attribute(element, kAXIdentifierAttribute),
-            AX.attribute(element, kAXRoleDescriptionAttribute)
-        ]
-        if markers.contains(where: { $0?.localizedCaseInsensitiveContains("widget") == true }) {
-            return true
-        }
+        let identifier: String = AX.attribute(element, kAXIdentifierAttribute) ?? ""
+        if Self.isRealWidgetIdentifier(identifier) { return true }
         let children: [AXUIElement] = AX.attribute(element, kAXChildrenAttribute) ?? []
-        return children.contains { containsWidget($0, depth: depth + 1) }
+        return children.contains { containsRealWidget($0, depth: depth + 1) }
+    }
+
+    /// `widget-local:com.apple.weather:…` is a widget; `widgets-overlay-view` is
+    /// just an empty layer on the banner window.
+    static func isRealWidgetIdentifier(_ identifier: String) -> Bool {
+        let lower = identifier.lowercased()
+        guard lower.contains("widget"), !lower.contains("overlay") else { return false }
+        return lower.hasPrefix("widget-") || lower.hasPrefix("widget:") || lower.contains(".widget")
     }
 
     private func collectBanners(in element: AXUIElement, depth: Int, into result: inout [AXUIElement]) {
