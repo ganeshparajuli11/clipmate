@@ -26,7 +26,8 @@ struct HistorySection: View {
                     monospaced: clip.kind == .text,
                     truncation: clip.kind == .files ? .middle : .tail,
                     isUnavailable: clip.isDangling,
-                    pin: pinAffordance(for: clip)
+                    pin: pinAffordance(for: clip),
+                    extra: textExtraction(for: clip)
                 ) {
                     clipboard.copy(clip)
                 }
@@ -36,6 +37,11 @@ struct HistorySection: View {
                 // since the file already exists on disk.
                 .onDrag { dragProvider(for: clip) }
                 .contextMenu {
+                    if let source = clip.textExtractionSource {
+                        Button("Copy Text from Image") {
+                            Task { _ = await clipboard.copyRecognizedText(fromImageAt: source) }
+                        }
+                    }
                     if clip.kind == .files, !clip.existingURLs.isEmpty {
                         Button("Show in Finder") {
                             NSWorkspace.shared.activateFileViewerSelecting(clip.existingURLs)
@@ -64,6 +70,17 @@ struct HistorySection: View {
             }
             return NSItemProvider(contentsOf: url) ?? NSItemProvider(object: url as NSURL)
         }
+    }
+
+    /// Image clips (and single image files) get a "copy the text in this image"
+    /// button, powered by on-device Vision OCR.
+    private func textExtraction(for clip: Clip) -> RowExtraAction? {
+        guard let source = clip.textExtractionSource else { return nil }
+        return RowExtraAction(
+            icon: "text.viewfinder",
+            help: "Copy the text in this image",
+            perform: { await clipboard.copyRecognizedText(fromImageAt: source) }
+        )
     }
 
     /// Only text clips are pinnable — a pin is a plain string, so a pinned file

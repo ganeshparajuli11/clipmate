@@ -25,4 +25,19 @@ extension KeyboardShortcuts.Name {
         "takeScreenshot",
         default: .init(.d, modifiers: [.command, .shift])
     )
+
+    /// Drag-select any area of the screen and copy the *text* in it (on-device OCR).
+    ///
+    /// Defaults to ⌃⇧⌘T — ⇧⌘T alone is "reopen closed tab" in every browser.
+    static let captureText = Self(
+        "captureText",
+        default: .init(.t, modifiers: [.control, .shift, .command])
+    )
+
+    /// Turns Keep Awake on or off. No default — record one in Settings if wanted.
+    static let toggleKeepAwake = Self("toggleKeepAwake")
+
+    /// Hides every notification banner, or lets them through again.
+    /// No default — record one in Settings if wanted.
+    static let toggleHideAllNotifications = Self("toggleHideAllNotifications")
 }

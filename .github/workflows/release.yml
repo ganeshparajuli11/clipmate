@@ -1,0 +1,69 @@
+name: Build & Release
+
+# Builds ClipMate on a GitHub-hosted Mac and publishes ClipMate.dmg.
+#
+# - Push a tag like `v1.5.0`          → normal release (becomes "latest").
+# - Push a tag like `v1.5.0-beta.1`   → pre-release, for testing; the README's
+#                                       "latest" download link is untouched.
+# - Run manually (Actions tab)        → just builds; the DMG is attached to the
+#                                       run as an artifact.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Build (universal, ad-hoc signed)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project ClipMate.xcodeproj \
+            -scheme ClipMate \
+            -configuration Release \
+            -derivedDataPath build \
+            -destination 'generic/platform=macOS' \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
+            ARCHS="arm64 x86_64" ONLY_ACTIVE_ARCH=NO \
+            CODE_SIGN_IDENTITY="-" CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="" \
+            build | tee build.log
+
+      - name: Package DMG
+        run: |
+          APP="build/Build/Products/Release/ClipMate.app"
+          codesign --force --deep --sign - "$APP"
+          codesign --verify --verbose "$APP"
+          mkdir -p dmg
+          cp -R "$APP" dmg/
+          ln -s /Applications dmg/Applications
+          hdiutil create -volname ClipMate -srcfolder dmg -ov -format UDZO ClipMate.dmg
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ClipMate-dmg
+          path: ClipMate.dmg
+
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          PRE=""
+          if [[ "$TAG" == *-* ]]; then PRE="--prerelease"; fi
+          gh release create "$TAG" ClipMate.dmg \
+            --title "ClipMate ${TAG#v}" \
+            --notes-file .github/release-notes.md \
+            --verify-tag $PRE

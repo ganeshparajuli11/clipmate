@@ -10,11 +10,19 @@ import SwiftUI
 /// releases. A plain `NSWindowController` has no such moving parts.
 final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
-    convenience init(settings: AppSettings, clipboard: ClipboardManager, finderCut: FinderCutService) {
+    convenience init(
+        settings: AppSettings,
+        clipboard: ClipboardManager,
+        finderCut: FinderCutService,
+        keepAwake: KeepAwakeService,
+        notifications: NotificationFilterService
+    ) {
         let root = SettingsView()
             .environmentObject(settings)
             .environmentObject(clipboard)
             .environmentObject(finderCut)
+            .environmentObject(keepAwake)
+            .environmentObject(notifications)
 
         let hostingController = NSHostingController(rootView: root)
         let window = NSWindow(contentViewController: hostingController)
