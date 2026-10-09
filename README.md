@@ -44,7 +44,7 @@ A tiny macOS menu bar app for the things you paste all day: pinned texts, recent
 
 Grab **`ClipMate.dmg`** from the [latest release](https://github.com/ganeshparajuli11/clipmate/releases/latest), open it, and drag ClipMate into Applications. macOS 13 Ventura or later.
 
-Because the app is signed with a self-signed certificate rather than an Apple Developer one, the first launch needs **right-click ▸ Open** — see [Gatekeeper](#gatekeeper) below.
+Because the app is not notarized by Apple, the first launch shows "Apple could not verify ClipMate…". Click **Done**, then **System Settings ▸ Privacy & Security ▸ Open Anyway** — see [Gatekeeper](#gatekeeper-apple-could-not-verify-clipmate) below.
 
 ### Build from source
 
@@ -74,9 +74,20 @@ xcodebuild -scheme ClipMate CODE_SIGN_IDENTITY="-" CODE_SIGN_STYLE=Automatic bui
 
 Why bother? An ad-hoc signature's identity is just a hash of the binary, so **every rebuild looks like a brand-new app to macOS** and the Screen Recording permission resets each time. Signing with a stable certificate makes the identity survive rebuilds, so you grant permissions once. That is the only reason this setting exists.
 
-### Gatekeeper
+### Gatekeeper ("Apple could not verify ClipMate…")
 
-A locally built app isn't signed with a paid Apple Developer certificate, so the first time you open it from `/Applications` macOS may refuse. **Right-click the app ▸ Open**, then confirm — or approve it in **System Settings ▸ Privacy & Security**. You only do this once. Proper signing and notarization need a paid Apple Developer account and are out of scope.
+Releases are ad-hoc signed, not notarized — notarization needs a paid Apple Developer account. On macOS 15 Sequoia and macOS 26 Tahoe, right-click ▸ Open no longer bypasses the warning. Instead:
+
+1. Open ClipMate once and click **Done** on the warning.
+2. Go to **System Settings ▸ Privacy & Security**, scroll down to *"ClipMate" was blocked to protect your Mac* and click **Open Anyway**, then confirm with your password.
+
+Or, in Terminal: `xattr -dr com.apple.quarantine /Applications/ClipMate.app`
+
+**To remove the warning for everyone:** join the Apple Developer Program, then add the `DEVELOPER_ID_CERT_P12`, `DEVELOPER_ID_CERT_PASSWORD`, `APPLE_ID`, `APPLE_TEAM_ID` and `APPLE_APP_PASSWORD` secrets to this repo. The release workflow (`.github/workflows/release.yml`) then signs with your Developer ID, enables the hardened runtime and notarizes every release automatically.
+
+### Releasing
+
+Push a tag: `v1.5.0` publishes a normal release, `v1.5.0-beta.1` a pre-release. GitHub Actions builds a universal `ClipMate.dmg` and attaches it.
 
 ## Using it
 
@@ -98,7 +109,7 @@ This is the one feature that needs **Accessibility** permission, because refusin
 
 ## Permissions
 
-ClipMate is built to ask for as little as possible.
+ClipMate is built to ask for as little as possible — and to **explain before it asks**. On first launch a *Privacy & Permissions* window lists what ClipMate keeps and what each permission is for (reopen it from Settings). No permission is requested at launch: each is requested only when you first use the feature that needs it, after an explanation of exactly what ClipMate will be able to see. Turning on Notification control asks for your consent to read banner text before Accessibility is requested.
 
 | Permission | Needed? | Why |
 |---|---|---|

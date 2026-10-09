@@ -39,15 +39,60 @@ jobs:
             CODE_SIGN_IDENTITY="-" CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="" \
             build | tee build.log
 
+      # Without the secrets below the app is ad-hoc signed: it works, but macOS
+      # shows "Apple could not verify…" on first launch (see the release notes).
+      # With an Apple Developer ID (paid Apple Developer Program) add these repo
+      # secrets and every release is signed + notarized, so it opens normally:
+      #   DEVELOPER_ID_CERT_P12      base64 of your "Developer ID Application" .p12
+      #   DEVELOPER_ID_CERT_PASSWORD password of that .p12
+      #   APPLE_ID                   your Apple ID email
+      #   APPLE_TEAM_ID              your 10-character team ID
+      #   APPLE_APP_PASSWORD         an app-specific password from account.apple.com
+      - name: Sign app
+        env:
+          CERT_P12: ${{ secrets.DEVELOPER_ID_CERT_P12 }}
+          CERT_PASSWORD: ${{ secrets.DEVELOPER_ID_CERT_PASSWORD }}
+        run: |
+          APP="build/Build/Products/Release/ClipMate.app"
+          if [ -n "$CERT_P12" ]; then
+            KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+            security create-keychain -p ci "$KEYCHAIN"
+            security set-keychain-settings -lut 21600 "$KEYCHAIN"
+            security unlock-keychain -p ci "$KEYCHAIN"
+            echo "$CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+            security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$CERT_PASSWORD" -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k ci "$KEYCHAIN"
+            security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+            IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" | grep "Developer ID Application" | head -1 | awk -F'"' '{print $2}')
+            codesign --force --deep --options runtime --timestamp \
+              --entitlements ClipMate/ClipMate.entitlements --sign "$IDENTITY" "$APP"
+            echo "SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+            echo "Signed with Developer ID."
+          else
+            codesign --force --deep --sign - "$APP"
+            echo "::warning::No Developer ID secrets — app is ad-hoc signed and macOS will warn on first launch."
+          fi
+          codesign --verify --verbose "$APP"
+
       - name: Package DMG
         run: |
           APP="build/Build/Products/Release/ClipMate.app"
-          codesign --force --deep --sign - "$APP"
-          codesign --verify --verbose "$APP"
           mkdir -p dmg
           cp -R "$APP" dmg/
           ln -s /Applications dmg/Applications
           hdiutil create -volname ClipMate -srcfolder dmg -ov -format UDZO ClipMate.dmg
+
+      - name: Notarize DMG
+        if: env.SIGN_IDENTITY != ''
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          codesign --force --timestamp --sign "$SIGN_IDENTITY" ClipMate.dmg
+          xcrun notarytool submit ClipMate.dmg \
+            --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" --password "$APPLE_APP_PASSWORD" --wait
+          xcrun stapler staple ClipMate.dmg
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4

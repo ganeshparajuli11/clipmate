@@ -163,6 +163,9 @@ struct SettingsView: View {
 
             Section {
                 HStack {
+                    Button("Privacy & Permissions…") {
+                        PrivacyWindowController.shared.present()
+                    }
                     Spacer()
                     Button("Quit ClipMate") {
                         NSApp.terminate(nil)
