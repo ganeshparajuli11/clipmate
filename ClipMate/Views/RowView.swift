@@ -13,6 +13,17 @@ struct PinAffordance {
     let toggle: () -> Void
 }
 
+/// An extra trailing button on a row, e.g. "Copy text from image".
+///
+/// `perform` returns the short confirmation shown in the row afterwards
+/// ("Text copied ✓", "No text found"), so long-running work such as OCR can report
+/// its outcome in place without a notification.
+struct RowExtraAction {
+    let icon: String
+    let help: String
+    let perform: () async -> String
+}
+
 /// One tappable line in the panel — used for pinned texts and for recent clips,
 /// whether those clips are text or files.
 struct RowView: View {
@@ -31,6 +42,8 @@ struct RowView: View {
     var isUnavailable: Bool = false
     /// When non-nil, a pin button is shown at the trailing edge.
     var pin: PinAffordance?
+    /// When non-nil, an extra button is shown before the pin button.
+    var extra: RowExtraAction?
     /// Return `false` to signal the copy did not happen.
     let action: () -> Bool
 
@@ -42,6 +55,9 @@ struct RowView: View {
 
     /// Tracks the pending reset so rapid clicks don't leave a stale badge behind.
     @State private var resetTask: Task<Void, Never>?
+
+    /// True while the extra action (e.g. OCR) is running.
+    @State private var isWorking = false
 
     var body: some View {
         HStack(spacing: 4) {
@@ -112,9 +128,40 @@ struct RowView: View {
                 .foregroundStyle(Theme.confirmation)
                 .transition(.opacity.combined(with: .scale(scale: 0.85)))
                 .fixedSize()
-        } else if let pin {
-            pinButton(pin)
+        } else if isWorking {
+            ProgressView()
+                .controlSize(.small)
+                .scaleEffect(0.7)
+                .frame(width: 18, height: 18)
+        } else {
+            HStack(spacing: 2) {
+                if let extra {
+                    extraButton(extra)
+                }
+                if let pin {
+                    pinButton(pin)
+                }
+            }
         }
+    }
+
+    private func extraButton(_ extra: RowExtraAction) -> some View {
+        Button {
+            isWorking = true
+            Task { @MainActor in
+                let message = await extra.perform()
+                isWorking = false
+                showConfirmation(message)
+            }
+        } label: {
+            Image(systemName: extra.icon)
+                .font(.system(size: 10.5, weight: .semibold))
+                .foregroundStyle(isHovering ? Theme.accent : Color.secondary.opacity(0.40))
+                .frame(width: 18, height: 18)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help(extra.help)
     }
 
     private func pinButton(_ pin: PinAffordance) -> some View {

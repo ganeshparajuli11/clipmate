@@ -11,16 +11,37 @@ import SwiftUI
 /// itself keeps it compact without a scroll view fighting the auto-sizing.
 struct PanelView: View {
     let onScreenshot: () -> Void
+    let onCaptureText: () -> Void
     let onOpenSettings: () -> Void
 
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var clipboard: ClipboardManager
+    @EnvironmentObject private var notifications: NotificationFilterService
 
     private var hasPins: Bool { !settings.visiblePins.isEmpty }
     private var hasHistory: Bool { !clipboard.history.isEmpty }
+    private var hasHiddenNotifications: Bool { !notifications.inbox.isEmpty }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            if settings.showQuickToggles {
+                QuickTogglesSection()
+
+                Divider()
+                    .opacity(0.35)
+                    .padding(.vertical, 4)
+            }
+
+            if hasHiddenNotifications {
+                HiddenNotificationsSection()
+
+                if hasPins || hasHistory {
+                    Divider()
+                        .opacity(0.35)
+                        .padding(.vertical, 4)
+                }
+            }
+
             if hasPins {
                 PinnedSection()
             }
@@ -35,7 +56,7 @@ struct PanelView: View {
                 HistorySection()
             }
 
-            if hasPins || hasHistory {
+            if hasPins || hasHistory || hasHiddenNotifications {
                 Divider()
                     .opacity(0.35)
                     .padding(.top, 6)
@@ -56,6 +77,12 @@ struct PanelView: View {
                 action: onScreenshot
             )
 
+            FooterButton(
+                icon: "text.viewfinder",
+                help: "Copy text from a screen area",
+                action: onCaptureText
+            )
+
             Spacer()
 
             FooterButton(
@@ -64,7 +91,7 @@ struct PanelView: View {
                 action: onOpenSettings
             )
         }
-        .padding(.top, (hasPins || hasHistory) ? 8 : 0)
+        .padding(.top, (hasPins || hasHistory || hasHiddenNotifications || settings.showQuickToggles) ? 8 : 0)
         .padding(.horizontal, 4)
     }
 }

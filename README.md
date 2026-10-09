@@ -1,6 +1,6 @@
 # ClipMate
 
-A tiny macOS menu bar app for the things you paste all day: pinned texts, recent clips, and a one-key area screenshot.
+A tiny macOS menu bar app for the things you paste all day: pinned texts, recent clips, a one-key area screenshot — plus text-from-image (OCR), Keep Awake, and per-app notification control.
 
 **[clipmate website →](https://ganeshparajuli11.github.io/clipmate/)** &nbsp;·&nbsp; **[Download the latest release →](https://github.com/ganeshparajuli11/clipmate/releases/latest/download/ClipMate.dmg)**
 
@@ -23,7 +23,10 @@ A tiny macOS menu bar app for the things you paste all day: pinned texts, recent
 - **Starts completely empty** — no sample pins, no fake clips. Nothing appears until you actually copy something.
 - **Screenshot** — drag-select any region. Save a timestamped PNG to the Desktop, or copy it straight to the clipboard with no file written at all.
 - **Ask once, then remember** — optionally have ClipMate ask Copy-or-Save the first time, then silently reuse your answer forever.
-- **Two global hotkeys** — **⇧⌘E** shows the panel (ClipMate's Win+V), **⇧⌘D** takes a screenshot without opening the panel first. Both re-recordable in Settings.
+- **Global hotkeys** — **⇧⌘E** shows the panel (ClipMate's Win+V), **⇧⌘D** takes a screenshot, **⌃⇧⌘T** copies text from a screen area. Optional hotkeys for Keep Awake and *Hide all notifications*. All re-recordable in Settings.
+- **Copy text from any image (OCR)** — hover an image clip and click the text-scan button, or right-click ▸ *Copy Text from Image*. Or press **⌃⇧⌘T** and drag over anything on screen — a video, a PDF, a locked dialog — and the text lands on your clipboard. Uses Apple's free, on-device Vision engine (the one behind Live Text); works offline and detects the language automatically.
+- **Keep Awake** — a small switch in the panel stops your Mac sleeping, KeepingYouAwake-style. Pick 15 min → 5 h or *until I turn it off*, keep the display on or let it sleep, auto-off on low battery. **⌥-click or right-click the menu bar icon** to toggle it; the icon becomes a coffee cup while it's on.
+- **Notification control, per app** — choose which apps may pop up banners: *Show all*, *Choose apps*, or *Hide all*. Works for notifications your **iPhone** forwards to the Mac too (Instagram, Messenger, WhatsApp…). Hidden banners aren't lost — they're listed in the panel under *Hidden notifications*; click one to copy its text.
 - **Launch at login** — one toggle.
 - **Knows when files go missing** — a copied file that has since been deleted or moved is shown struck through and refuses to paste a dead reference.
 - **⌘C/⌘V work in the app itself** — an agent app gets no menu bar, which normally leaves its own text fields unable to copy or paste. ClipMate installs an Edit menu so editing works everywhere.
@@ -101,15 +104,15 @@ ClipMate is built to ask for as little as possible.
 |---|---|---|
 | **Notifications** | ❌ No | Confirmations appear inside the panel instead. |
 | **Full Disk Access** | ❌ No | Nothing is read outside the app's own preferences. |
-| **Screen Recording** | ⚠️ Once | Only the first time you take a screenshot. macOS shows the prompt itself; ClipMate never asks up front. |
-| **Accessibility** | ⚙️ Opt-in | Only if you switch on Finder cut & paste. The hotkeys use Carbon and never need it. |
+| **Screen Recording** | ⚠️ Once | Only the first time you take a screenshot or copy text from the screen. macOS shows the prompt itself; ClipMate never asks up front. |
+| **Accessibility** | ⚙️ Opt-in | Only if you switch on Finder cut & paste, or set Notifications to anything other than *Show all*. The hotkeys use Carbon and never need it. |
 | **Automation (Finder)** | ⚙️ Opt-in | Same feature only — used to read the Finder selection and the folder you're viewing. |
 
 Nothing ever leaves your machine — there is no network code in this app at all.
 
 ## How it works
 
-- **Storage** is `UserDefaults`, a handful of keys: `clipmate.pins`, `clipmate.history`, `clipmate.historySize`, `clipmate.screenshotToClipboard`, `clipmate.screenshotAskFirst`, `clipmate.screenshotChoiceRemembered`.
+- **Storage** is `UserDefaults`, a handful of keys: `clipmate.pins`, `clipmate.history`, `clipmate.historySize`, `clipmate.screenshotToClipboard`, `clipmate.screenshotAskFirst`, `clipmate.screenshotChoiceRemembered`, plus `clipmate.keepAwake.*` and `clipmate.notifications.*` (mode, app list — never notification contents).
 - **Capture** polls `NSPasteboard.changeCount` once a second — a single integer comparison; the pasteboard is only read when something actually changed. Watching the pasteboard rather than keystrokes is what makes ⌘X work for free, and is why no Accessibility permission is needed.
 - **History is de-duplicated** — re-copying an old clip promotes it to the top instead of adding a second row.
 - **Read order is files → text → images.** A Finder copy also puts text on the pasteboard, so checking text first would record every file copy as a path string. Text is checked before images because apps that copy a picture often supply its URL as text too, and that is usually what you wanted; a real image copy carries no string and falls through.
@@ -119,6 +122,9 @@ Nothing ever leaves your machine — there is no network code in this app at all
 - **File clips** are read with `readObjects(forClasses: [NSURL.self])` and checked *before* the plain-text branch, because a Finder copy also puts a text representation on the pasteboard. Writing them back uses `writeObjects`, which publishes both the file-URL type Finder needs and a text fallback. History is stored as JSON so a file clip keeps its full path list; older plain-`[String]` histories migrate automatically.
 - **Copy-to-clipboard screenshots** use `screencapture -ic`, which hands the image to the clipboard without ever touching disk. The Desktop path deletes its target file if the capture doesn't succeed, so a cancelled capture leaves nothing behind.
 - **Finder cut & paste** uses a `CGEventTap` that swallows the keystroke and then does the slow work asynchronously, because a tap callback that blocks for too long gets disabled by the system. It re-enables itself if macOS disables it. Finder's selection and insertion location come from AppleScript; the move is plain `FileManager`, with collision renaming rather than overwriting.
+- **Text recognition** uses `VNRecognizeTextRequest` at the `.accurate` level with automatic language detection. Fragments are regrouped into visual lines (top-to-bottom, left-to-right) so columns and tables come out readable. *Copy text from screen* captures to a temporary file — never the clipboard — so only the text, not the image, lands in your history.
+- **Keep Awake** holds an IOKit power assertion (`PreventUserIdleDisplaySleep`, or `PreventUserIdleSystemSleep` if the display may sleep) — the same mechanism as `caffeinate`. macOS releases it automatically if ClipMate quits or crashes.
+- **Notification control** — macOS has no public API that lets one app filter another's notifications. ClipMate watches Notification Center's process (`com.apple.notificationcenterui`) through the Accessibility API, reads each banner's app/title/body, and presses the banner's own *Close* action when that app is hidden — exactly what clicking ✕ does. An AX observer reacts the instant a banner window appears, with a 0.35 s check as backup, so a hidden banner may flash for a split second. The full-height Notification Center sidebar is never touched, so your notification history stays intact. Hidden banners are kept **in memory only** (last 30). Because Notification Center's internal layout can change between macOS releases, this is the part most likely to need a tweak after a major update. To stop an iPhone app reaching the Mac entirely, use *System Settings ▸ Notifications ▸ Allow notifications from iPhone*.
 - **Reduce Transparency** is honoured — the vibrancy layers fall back to a solid background.
 
 ## Non-goals

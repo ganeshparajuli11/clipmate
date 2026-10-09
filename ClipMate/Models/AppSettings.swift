@@ -44,6 +44,7 @@ final class AppSettings: ObservableObject {
         static let screenshotAskFirst = "clipmate.screenshotAskFirst"
         static let screenshotChoiceRemembered = "clipmate.screenshotChoiceRemembered"
         static let finderCutEnabled = "clipmate.finderCutEnabled"
+        static let showQuickToggles = "clipmate.showQuickToggles"
     }
 
     /// ClipMate always offers this many pinned slots in Settings.
@@ -178,6 +179,13 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(finderCutEnabled, forKey: Keys.finderCutEnabled) }
     }
 
+    // MARK: - Panel
+
+    /// Show the Keep Awake and Notifications switches at the top of the panel.
+    @Published var showQuickToggles: Bool {
+        didSet { defaults.set(showQuickToggles, forKey: Keys.showQuickToggles) }
+    }
+
     // MARK: - Launch at login
 
     /// Mirrors the app's `SMAppService` registration state.
@@ -215,6 +223,7 @@ final class AppSettings: ObservableObject {
         self.hasRememberedScreenshotChoice = defaults.bool(forKey: Keys.screenshotChoiceRemembered)
 
         self.finderCutEnabled = defaults.bool(forKey: Keys.finderCutEnabled)
+        self.showQuickToggles = defaults.object(forKey: Keys.showQuickToggles) as? Bool ?? true
         self.launchAtLogin = SMAppService.mainApp.status == .enabled
     }
 

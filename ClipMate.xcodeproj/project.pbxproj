@@ -28,6 +28,12 @@
 		CB1700000000000000000035 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1700000000000000000034 /* Theme.swift */; };
 		CB1700000000000000000016 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CB1700000000000000000015 /* Assets.xcassets */; };
 		CB1700000000000000000014 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = CB1700000000000000000013 /* KeyboardShortcuts */; };
+		CB17000000000000000001A2 /* TextRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000001A1 /* TextRecognizer.swift */; };
+		CB17000000000000000001A4 /* KeepAwakeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000001A3 /* KeepAwakeService.swift */; };
+		CB17000000000000000001A6 /* NotificationFilterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000001A5 /* NotificationFilterService.swift */; };
+		CB17000000000000000001A8 /* HUDWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000001A7 /* HUDWindow.swift */; };
+		CB17000000000000000001AA /* QuickTogglesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000001A9 /* QuickTogglesSection.swift */; };
+		CB17000000000000000001AC /* HiddenNotificationsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB17000000000000000001AB /* HiddenNotificationsSection.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,6 +59,12 @@
 		CB1700000000000000000034 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		CB1700000000000000000015 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CB1700000000000000000017 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CB17000000000000000001A1 /* TextRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextRecognizer.swift; sourceTree = "<group>"; };
+		CB17000000000000000001A3 /* KeepAwakeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeepAwakeService.swift; sourceTree = "<group>"; };
+		CB17000000000000000001A5 /* NotificationFilterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationFilterService.swift; sourceTree = "<group>"; };
+		CB17000000000000000001A7 /* HUDWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HUDWindow.swift; sourceTree = "<group>"; };
+		CB17000000000000000001A9 /* QuickTogglesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickTogglesSection.swift; sourceTree = "<group>"; };
+		CB17000000000000000001AB /* HiddenNotificationsSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HiddenNotificationsSection.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,6 +119,9 @@
 				CB1700000000000000000020 /* ClipboardManager.swift */,
 				CB1700000000000000000022 /* Pasteboard.swift */,
 				CB1700000000000000000024 /* ScreenshotService.swift */,
+				CB17000000000000000001A5 /* NotificationFilterService.swift */,
+				CB17000000000000000001A3 /* KeepAwakeService.swift */,
+				CB17000000000000000001A1 /* TextRecognizer.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -123,6 +138,9 @@
 				CB1700000000000000000030 /* SettingsView.swift */,
 				CB1700000000000000000032 /* SettingsWindowController.swift */,
 				CB1700000000000000000034 /* Theme.swift */,
+				CB17000000000000000001AB /* HiddenNotificationsSection.swift */,
+				CB17000000000000000001A9 /* QuickTogglesSection.swift */,
+				CB17000000000000000001A7 /* HUDWindow.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -220,6 +238,12 @@
 				CB1700000000000000000031 /* SettingsView.swift in Sources */,
 				CB1700000000000000000033 /* SettingsWindowController.swift in Sources */,
 				CB1700000000000000000035 /* Theme.swift in Sources */,
+				CB17000000000000000001AC /* HiddenNotificationsSection.swift in Sources */,
+				CB17000000000000000001AA /* QuickTogglesSection.swift in Sources */,
+				CB17000000000000000001A8 /* HUDWindow.swift in Sources */,
+				CB17000000000000000001A6 /* NotificationFilterService.swift in Sources */,
+				CB17000000000000000001A4 /* KeepAwakeService.swift in Sources */,
+				CB17000000000000000001A2 /* TextRecognizer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,7 +364,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				CODE_SIGN_IDENTITY = "ClipMate Self-Signed";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
@@ -354,7 +378,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.4;
+				MARKETING_VERSION = 1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.clipmate.ClipMate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -368,7 +392,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				CODE_SIGN_IDENTITY = "ClipMate Self-Signed";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
@@ -382,7 +406,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.4;
+				MARKETING_VERSION = 1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = com.clipmate.ClipMate;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

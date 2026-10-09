@@ -198,4 +198,23 @@ final class ClipboardManager: ObservableObject {
         lastChangeCount = NSPasteboard.general.changeCount
         record(Clip(text: text))
     }
+
+    // MARK: - Text extraction (OCR)
+
+    /// Recognises the text in an image and puts it on the clipboard as plain text,
+    /// where it also lands at the top of the history.
+    ///
+    /// - Returns: a short confirmation for the row ("Text copied ✓",
+    ///   "No text found", …).
+    func copyRecognizedText(fromImageAt url: URL) async -> String {
+        do {
+            let text = try await TextRecognizer.recognizeText(at: url)
+            copy(text: text)
+            return "Text copied ✓"
+        } catch TextRecognizer.RecognitionError.noTextFound {
+            return "No text found"
+        } catch {
+            return "Couldn't read"
+        }
+    }
 }

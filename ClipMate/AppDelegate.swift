@@ -18,6 +18,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let settings = AppSettings()
     private lazy var clipboard = ClipboardManager(settings: settings)
     private let finderCut = FinderCutService()
+    private let keepAwake = KeepAwakeService()
+    private let notifications = NotificationFilterService()
 
     // MARK: - AppKit state
 
@@ -51,11 +53,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         configureHotkeys()
         clipboard.startMonitoring()
         configureFinderCut()
+        configureKeepAwake()
+        configureNotificationFilter()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         clipboard.stopMonitoring()
         finderCut.stop()
+        keepAwake.deactivate()
+        notifications.stop()
         removePanelMonitors()
     }
 
@@ -80,14 +86,42 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.imagePosition = .imageOnly
             button.target = self
             button.action = #selector(statusItemClicked)
-            button.toolTip = "ClipMate — pinned texts and clipboard history"
+            // Right-click is a shortcut for Keep Awake, so listen for both.
+            button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+            button.toolTip = Self.defaultToolTip
         }
 
         statusItem = item
     }
 
+    private static let defaultToolTip = "ClipMate — pinned texts and clipboard history\n⌥-click or right-click: Keep Awake"
+
+    /// Left-click opens the panel. ⌥-click or right-click toggles Keep Awake,
+    /// the same shortcut KeepingYouAwake-style apps use.
     @objc private func statusItemClicked() {
-        togglePanel()
+        let event = NSApp.currentEvent
+        let isRightClick = event?.type == .rightMouseUp
+        let isOptionClick = event?.modifierFlags.contains(.option) ?? false
+
+        if isRightClick || isOptionClick {
+            closePanel()
+            toggleKeepAwake()
+        } else {
+            togglePanel()
+        }
+    }
+
+    /// Swaps the menu bar glyph for a coffee cup while Keep Awake is on, so it's
+    /// obvious at a glance that the Mac won't sleep.
+    private func updateStatusItemAppearance() {
+        guard let button = statusItem?.button else { return }
+        let symbol = keepAwake.isActive ? "cup.and.saucer.fill" : "doc.on.clipboard"
+        let image = NSImage(systemSymbolName: symbol, accessibilityDescription: "ClipMate")
+        image?.isTemplate = true
+        button.image = image
+        button.toolTip = keepAwake.isActive
+            ? "ClipMate — Keep Awake is on (\(keepAwake.statusText))\n⌥-click or right-click to turn it off"
+            : Self.defaultToolTip
     }
 
     // MARK: - Popover
@@ -95,10 +129,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func configurePopover() {
         let panel = PanelView(
             onScreenshot: { [weak self] in self?.takeScreenshot() },
+            onCaptureText: { [weak self] in self?.captureText() },
             onOpenSettings: { [weak self] in self?.openSettings() }
         )
         .environmentObject(settings)
         .environmentObject(clipboard)
+        .environmentObject(keepAwake)
+        .environmentObject(notifications)
 
         let hostingController = NSHostingController(rootView: panel)
         // Let the popover shrink and grow with its content — with no pins set it
@@ -180,6 +217,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         KeyboardShortcuts.onKeyDown(for: .takeScreenshot) { [weak self] in
             self?.takeScreenshot()
         }
+
+        KeyboardShortcuts.onKeyDown(for: .captureText) { [weak self] in
+            self?.captureText()
+        }
+
+        KeyboardShortcuts.onKeyDown(for: .toggleKeepAwake) { [weak self] in
+            self?.toggleKeepAwake()
+        }
+
+        KeyboardShortcuts.onKeyDown(for: .toggleHideAllNotifications) { [weak self] in
+            self?.toggleHideAllNotifications()
+        }
     }
 
     /// Adopts newer defaults on installs that still carry an older build's.
@@ -244,6 +293,90 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    // MARK: - Keep Awake
+
+    private func configureKeepAwake() {
+        keepAwake.$isActive
+            .combineLatest(keepAwake.$endsAt)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _, _ in
+                self?.updateStatusItemAppearance()
+            }
+            .store(in: &cancellables)
+
+        if keepAwake.activateAtLaunch {
+            keepAwake.activate(for: keepAwake.defaultDuration)
+        }
+    }
+
+    private func toggleKeepAwake() {
+        keepAwake.toggle()
+        HUD.show(
+            keepAwake.isActive ? "Keep Awake on — \(keepAwake.defaultDuration.title.lowercased())" : "Keep Awake off",
+            symbol: keepAwake.isActive ? "cup.and.saucer.fill" : "moon.zzz.fill"
+        )
+    }
+
+    // MARK: - Notification filter
+
+    private func configureNotificationFilter() {
+        notifications.applyMode()
+
+        // Switching away from "Show all" is what asks for Accessibility — never
+        // before. Once granted, watching starts on its own.
+        notifications.$mode
+            .dropFirst()
+            .receive(on: RunLoop.main)
+            .sink { mode in
+                if mode != .showAll, !NotificationFilterService.hasAccessibilityPermission {
+                    FinderCutService.requestAccessibilityPermission()
+                }
+            }
+            .store(in: &cancellables)
+
+        // Accessibility is granted in System Settings, outside the app; notice it
+        // and start without needing a relaunch.
+        Timer.publish(every: 3, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                guard let self else { return }
+                if self.notifications.mode != .showAll,
+                   !self.notifications.isRunning,
+                   NotificationFilterService.hasAccessibilityPermission {
+                    self.notifications.applyMode()
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    private func toggleHideAllNotifications() {
+        notifications.mode = notifications.mode == .hideAll ? .showAll : .hideAll
+        HUD.show(
+            notifications.mode == .hideAll ? "Hiding all notification banners" : "Notifications back to normal",
+            symbol: notifications.mode == .hideAll ? "bell.slash.fill" : "bell.fill"
+        )
+    }
+
+    // MARK: - Copy text from screen (OCR)
+
+    /// Shared by the footer button and the ⌃⇧⌘T hotkey: drag over anything on
+    /// screen and the text in it lands on the clipboard (and in the history).
+    private func captureText() {
+        closePanel()
+        Task { @MainActor [weak self] in
+            switch await TextRecognizer.captureTextFromScreen() {
+            case .recognized(let text):
+                self?.clipboard.copy(text: text)
+                let lines = text.split(separator: "\n").count
+                HUD.show("Text copied — \(lines) line\(lines == 1 ? "" : "s")", symbol: "text.viewfinder")
+            case .cancelled:
+                break
+            case .failed(let message):
+                HUD.show(message, symbol: "exclamationmark.triangle.fill")
+            }
+        }
+    }
+
     // MARK: - Actions
 
     /// Reached from the app menu's Settings… item via the responder chain.
@@ -255,7 +388,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         closePanel()
 
         if settingsWindowController == nil {
-            settingsWindowController = SettingsWindowController(settings: settings, clipboard: clipboard, finderCut: finderCut)
+            settingsWindowController = SettingsWindowController(
+                settings: settings,
+                clipboard: clipboard,
+                finderCut: finderCut,
+                keepAwake: keepAwake,
+                notifications: notifications
+            )
         }
         settingsWindowController?.present()
     }

@@ -113,6 +113,23 @@ struct Clip: Codable, Hashable, Identifiable {
         kind == .text
     }
 
+    /// The image whose text can be extracted with "Copy Text from Image", if any.
+    ///
+    /// Image clips always qualify; a file clip qualifies when it is a single image
+    /// file (e.g. a screenshot copied in Finder).
+    var textExtractionSource: URL? {
+        switch kind {
+        case .text:
+            return nil
+        case .image:
+            return existingURLs.first
+        case .files:
+            guard paths.count == 1, let url = existingURLs.first,
+                  TextRecognizer.isImageFile(url) else { return nil }
+            return url
+        }
+    }
+
     /// Icon for the row. Files use the real Finder icon; images use a thumbnail.
     var icon: RowIcon {
         switch kind {
