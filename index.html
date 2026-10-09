@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>ClipMate — clipboard history, pins &amp; screenshots for macOS</title>
-<meta name="description" content="A tiny macOS menu bar app: clipboard history for text, files and images, four pinned snippets, and one-key area screenshots. Free, open source, no telemetry." />
+<title>ClipMate — clipboard history, text from images, Keep Awake &amp; notification control for macOS</title>
+<meta name="description" content="A tiny macOS menu bar app: clipboard history for text, files and images, pinned snippets, one-key screenshots, copy text from any image, Keep Awake, and per-app notification control — including your iPhone's. Free, open source, nothing leaves your Mac." />
 <meta name="theme-color" content="#ff7a93" />
 <link rel="icon" href="./assets/clipmate-icon-128.png" />
-<meta property="og:title" content="ClipMate for macOS" />
-<meta property="og:description" content="Clipboard history, pinned snippets and quick screenshots — in one small menu bar app." />
+<meta property="og:title" content="ClipMate 1.5 for macOS" />
+<meta property="og:description" content="Clipboard history, text from images, Keep Awake and per-app notification control — in one small menu bar app." />
 <meta property="og:image" content="./assets/clipmate-icon.png" />
 <meta property="og:type" content="website" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -33,10 +33,12 @@
     <span>ClipMate</span>
   </a>
   <nav class="nav-links">
+    <a href="#new">What's new</a>
     <a href="#features">Features</a>
     <a href="#shortcuts">Shortcuts</a>
-    <a href="#permissions">Permissions</a>
+    <a href="#privacy">Privacy</a>
     <a href="#install">Install</a>
+    <a href="#faq">FAQ</a>
   </nav>
   <a class="btn btn-sm" href="https://github.com/ganeshparajuli11/clipmate">GitHub</a>
 </header>
@@ -46,82 +48,203 @@
   <!-- ───────────────────────── hero ───────────────────────── -->
   <section class="hero">
     <div class="hero-copy">
-      <span class="chip"><span class="dot"></span> v1.4 &middot; macOS 13 Ventura or later</span>
+      <span class="chip"><span class="dot"></span> v1.5 &middot; macOS 13 Ventura or later</span>
       <h1>Everything you copied,<br /><span class="grad">one keystroke away.</span></h1>
       <p class="lede">
-        ClipMate lives in your menu bar and remembers the last 10 things you copied —
-        text, files, images, even your own screenshots. Pin what you paste every day.
-        Grab a screen area without reaching for another app.
+        ClipMate lives in your menu bar and remembers what you copy — text, files, images and
+        screenshots. Now it can also <strong>read the text in any image</strong>,
+        <strong>keep your Mac awake</strong>, and <strong>silence the apps you choose</strong>,
+        including the notifications your iPhone sends to your Mac.
       </p>
       <div class="cta">
         <a class="btn btn-primary" href="https://github.com/ganeshparajuli11/clipmate/releases/latest/download/ClipMate.dmg">
           Download for macOS
         </a>
-        <a class="btn" href="#install">How to install</a>
+        <a class="btn" href="#new">See what's new</a>
       </div>
-      <p class="fineprint">Free and open source (MIT) &middot; ~940&nbsp;KB &middot; Apple silicon &amp; Intel</p>
+      <p class="fineprint">Free and open source (MIT) &middot; ~1.7&nbsp;MB &middot; Apple silicon &amp; Intel &middot; works on macOS Tahoe</p>
     </div>
 
     <!-- The panel, drawn in CSS rather than screenshotted, so it stays crisp -->
     <div class="hero-art" aria-hidden="true">
       <div class="panel">
         <div class="panel-caret"></div>
+        <div class="row toggle-row"><span class="ico">&#9749;</span><span class="lbl">Keep Awake<small>On &middot; 42m left</small></span><span class="switch on"></span></div>
+        <div class="row toggle-row"><span class="ico">&#128277;</span><span class="lbl">Notifications<small>2 apps hidden</small></span><span class="pill">Choose apps &#8964;</span></div>
+        <div class="sep"></div>
+        <div class="panel-head">Hidden notifications <span class="clear">Clear</span></div>
+        <div class="row"><span class="ico">&#128277;</span><span class="lbl">Instagram: sam_k liked your photo</span></div>
+        <div class="sep"></div>
         <div class="panel-head">Pinned</div>
         <div class="row"><span class="ico pin">&#128204;</span><span class="lbl">hello@example.com</span><span class="pinbtn on">&#128204;</span></div>
         <div class="sep"></div>
         <div class="panel-head">Recent <span class="clear">Clear</span></div>
-        <div class="row"><span class="ico thumb"></span><span class="lbl">Image&nbsp; 2400 × 1260</span></div>
+        <div class="row"><span class="ico thumb"></span><span class="lbl">Image&nbsp; 2400 × 1260</span><span class="ocrbtn">T&#8689;</span><span class="copied">Text copied ✓</span></div>
         <div class="row"><span class="ico folder">&#128193;</span><span class="lbl">Q3-report.pdf&nbsp; +2 more</span></div>
-        <div class="row"><span class="ico doc">&#128203;</span><span class="lbl mono">npm run build --prod</span><span class="pinbtn">&#128204;</span></div>
         <div class="row"><span class="ico doc">&#128203;</span><span class="lbl mono">git rebase -i HEAD~3</span><span class="pinbtn">&#128204;</span></div>
         <div class="sep"></div>
-        <div class="panel-foot"><span class="fbtn">&#128247;</span><span class="fbtn right">&#9881;</span></div>
+        <div class="panel-foot"><span class="fbtn">&#128247;</span><span class="fbtn">&#9638;T</span><span class="fbtn right">&#9881;</span></div>
       </div>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── what's new ───────────────────────── -->
+  <section id="new" class="section">
+    <div class="section-head reveal">
+      <span class="eyebrow">New in 1.5</span>
+      <h2>Three new tools, still one small icon</h2>
+      <p>Everything below runs on your Mac with Apple's own frameworks. No accounts, no cloud, no extra apps to install.</p>
+    </div>
+
+    <!-- 1. Text from images -->
+    <article class="spot reveal">
+      <div class="spot-copy">
+        <div class="card-ico">&#128270;</div>
+        <h3>Copy text from any image</h3>
+        <p>Screenshots of error messages, a slide in a video call, a scanned receipt, text in a photo — get the words out and paste them anywhere.</p>
+        <ul class="ticks">
+          <li><strong>From your history:</strong> hover any image clip and click the text button, or right-click ▸ <em>Copy Text from Image</em>.</li>
+          <li><strong>From anywhere on screen:</strong> press <span class="combo"><kbd>⌃</kbd><kbd>⇧</kbd><kbd>⌘</kbd><kbd>T</kbd></span> and drag over it. The text lands on your clipboard; the image is thrown away.</li>
+          <li><strong>Private and offline:</strong> powered by Apple's Vision engine (the one behind Live Text). Languages are detected automatically, and columns and tables come out in reading order.</li>
+        </ul>
+      </div>
+      <div class="spot-art" aria-hidden="true">
+        <div class="ocr-demo">
+          <div class="ocr-screen">
+            <div class="ocr-line w80"></div>
+            <div class="ocr-sel">
+              <span>Error 403: access denied</span>
+              <span>Request ID 7f3a-91c2</span>
+            </div>
+            <div class="ocr-line w60"></div>
+            <div class="ocr-line w70"></div>
+          </div>
+          <div class="ocr-arrow">&#8595;</div>
+          <div class="ocr-result"><span class="ok">✓</span> Text copied — 2 lines</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 2. Keep Awake -->
+    <article class="spot flip reveal">
+      <div class="spot-copy">
+        <div class="card-ico">&#9749;</div>
+        <h3>Keep Awake</h3>
+        <p>Stop your Mac from dozing off during a long download, a presentation or a build — without another menu bar app.</p>
+        <ul class="ticks">
+          <li><strong>One small switch</strong> at the top of the panel. Pick 15 minutes, 30 minutes, 1, 2 or 5 hours, or <em>until I turn it off</em>.</li>
+          <li><strong>⌥-click or right-click the menu bar icon</strong> to toggle it instantly — the icon turns into a coffee cup while it's on.</li>
+          <li><strong>Sensible extras:</strong> keep the screen on or let it dim, turn on at launch, and switch off automatically on low battery.</li>
+        </ul>
+      </div>
+      <div class="spot-art" aria-hidden="true">
+        <div class="awake-demo">
+          <div class="menubar"><span>Finder</span><span class="mb-spacer"></span><span class="cup">&#9749;</span><span>Wi-Fi</span><span>15:38</span></div>
+          <div class="awake-card">
+            <div class="awake-row"><span>&#9749; Keep Awake</span><span class="switch on"></span></div>
+            <div class="durations">
+              <span>15m</span><span>30m</span><span class="sel">1h</span><span>2h</span><span>5h</span><span>&#8734;</span>
+            </div>
+            <div class="awake-row dim"><span>Keep the display on</span><span class="switch on"></span></div>
+            <div class="awake-row dim"><span>Off below 20% battery</span><span class="switch on"></span></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 3. Notification control -->
+    <article class="spot reveal">
+      <div class="spot-copy">
+        <div class="card-ico">&#128277;</div>
+        <h3>Notification control, app by app</h3>
+        <p>When your iPhone is connected, every Instagram like and Messenger ping pops up on your Mac too. Now you decide which apps are allowed to interrupt you.</p>
+        <ul class="ticks">
+          <li><strong>Three modes:</strong> <em>Show all</em>, <em>Choose apps</em>, or <em>Hide all</em> — one click from the panel, or a shortcut you set.</li>
+          <li><strong>Every app, iPhone included.</strong> Apps appear in the list as their notifications arrive; switch off the ones you don't want. You can also add one by name.</li>
+          <li><strong>Nothing is lost.</strong> Hidden notifications collect in the panel under <em>Hidden notifications</em>. Click one to copy its text. They're kept in memory only and forgotten when ClipMate quits.</li>
+        </ul>
+      </div>
+      <div class="spot-art" aria-hidden="true">
+        <div class="notif-demo">
+          <div class="banner gone"><span class="app-dot ig"></span><div><b>Instagram</b><span>sam_k liked your photo</span></div><span class="x">hidden</span></div>
+          <div class="banner"><span class="app-dot mail"></span><div><b>Mail</b><span>Invoice for October</span></div></div>
+          <div class="applist">
+            <div class="app"><span class="app-dot ig"></span>Instagram<span class="switch"></span></div>
+            <div class="app"><span class="app-dot ms"></span>Messenger<span class="switch"></span></div>
+            <div class="app"><span class="app-dot wa"></span>WhatsApp<span class="switch on"></span></div>
+            <div class="app"><span class="app-dot mail"></span>Mail<span class="switch on"></span></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- 4. Privacy screen (smaller) -->
+    <div class="grid two reveal" style="margin-top:1.1rem">
+      <article class="card">
+        <div class="card-ico">&#128272;</div>
+        <h3>Explains before it asks</h3>
+        <p>A <em>Privacy &amp; Permissions</em> screen on first launch shows exactly what ClipMate keeps and what each permission is for. Nothing is requested at launch — only when you first use a feature that needs it, after a plain-English explanation.</p>
+      </article>
+      <article class="card">
+        <div class="card-ico">&#128295;</div>
+        <h3>Fixes its own permissions</h3>
+        <p>macOS sometimes shows ClipMate switched on but still won't let it work — usually after an update. ClipMate notices, tells you, and offers <em>Fix Permission</em> and <em>Reopen ClipMate</em> instead of asking over and over.</p>
+      </article>
     </div>
   </section>
 
   <!-- ───────────────────────── features ───────────────────────── -->
   <section id="features" class="section">
     <div class="section-head reveal">
-      <h2>One app instead of four</h2>
-      <p>Clipboard manager, snippet keeper, screenshot tool and Finder helper — all in a 940&nbsp;KB menu bar icon.</p>
+      <h2>Everything ClipMate does</h2>
+      <p>Clipboard manager, snippet keeper, screenshot and text-capture tool, caffeine switch and notification filter — in one menu bar icon.</p>
     </div>
 
     <div class="grid">
       <article class="card reveal">
         <div class="card-ico">&#128203;</div>
         <h3>Clipboard history</h3>
-        <p>The last 10 clips, newest first, de-duplicated. Re-copying an old clip promotes it rather than adding a second row. Configurable from 3 to 12.</p>
+        <p>The last 10 clips, newest first, without duplicates. Copy something again and it moves to the top instead of appearing twice. Keep 3 to 12.</p>
       </article>
-
       <article class="card reveal">
         <div class="card-ico">&#128206;</div>
         <h3>Text, files <em>and</em> images</h3>
-        <p>Copy a paragraph, a folder, or a screenshot — all land in the same list. Files show their real Finder icon; images show a thumbnail and pixel size.</p>
+        <p>Copy a paragraph, a folder or a screenshot — all land in the same list. Files show their real Finder icon; images show a thumbnail and pixel size.</p>
       </article>
-
       <article class="card reveal">
         <div class="card-ico">&#128204;</div>
         <h3>Four pins</h3>
-        <p>Your email, your phone number, that boilerplate reply. Click the pin on any clip to keep it forever. Click again to release it.</p>
+        <p>Your email, your phone number, that reply you type every day. Click the pin on any clip to keep it; click again to release it.</p>
       </article>
-
       <article class="card reveal">
         <div class="card-ico">&#128247;</div>
         <h3>Area screenshots</h3>
-        <p>Drag-select any region with <span class="combo"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>D</kbd></span>. Save a timestamped PNG to the Desktop or copy it straight to the clipboard — your choice, remembered.</p>
+        <p>Drag over any area with <span class="combo"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>D</kbd></span>. Save a PNG to the Desktop or copy it straight to the clipboard — your choice, remembered.</p>
       </article>
-
+      <article class="card reveal">
+        <div class="card-ico">&#128270;</div>
+        <h3>Text from images <span class="new">new</span></h3>
+        <p>Pull the words out of any image clip, or drag over anything on screen with <span class="combo"><kbd>⌃</kbd><kbd>⇧</kbd><kbd>⌘</kbd><kbd>T</kbd></span>.</p>
+      </article>
+      <article class="card reveal">
+        <div class="card-ico">&#9749;</div>
+        <h3>Keep Awake <span class="new">new</span></h3>
+        <p>A switch in the panel keeps your Mac from sleeping for as long as you choose. ⌥-click the menu bar icon to toggle.</p>
+      </article>
+      <article class="card reveal">
+        <div class="card-ico">&#128277;</div>
+        <h3>Notification control <span class="new">new</span></h3>
+        <p>Hide pop-ups from the apps you pick — your iPhone's included — and read them later in the panel.</p>
+      </article>
       <article class="card reveal">
         <div class="card-ico">&#9986;</div>
         <h3>Windows-style cut in Finder</h3>
-        <p>Optional. Turn it on and <span class="combo"><kbd>⌘</kbd><kbd>X</kbd></span> cuts files while <span class="combo"><kbd>⌘</kbd><kbd>V</kbd></span> moves them — no more <span class="combo"><kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd></span>. Off by default.</p>
+        <p>Optional. <span class="combo"><kbd>⌘</kbd><kbd>X</kbd></span> cuts files and <span class="combo"><kbd>⌘</kbd><kbd>V</kbd></span> moves them, like on Windows. Off by default.</p>
       </article>
-
       <article class="card reveal">
         <div class="card-ico">&#128228;</div>
         <h3>Drag straight out</h3>
-        <p>Drag any row into another app. Files and images carry their file URL, so a drop into Finder produces a real file — not an inline blob.</p>
+        <p>Drag any row into another app. Files and images drop as real files — into Finder, Mail, Slack or anywhere else.</p>
       </article>
     </div>
   </section>
@@ -129,65 +252,110 @@
   <!-- ───────────────────────── shortcuts ───────────────────────── -->
   <section id="shortcuts" class="section">
     <div class="section-head reveal">
-      <h2>Two shortcuts, both yours to change</h2>
-      <p>Defaults chosen to dodge keys macOS has already claimed.</p>
+      <h2>Shortcuts, all yours to change</h2>
+      <p>They work from any app, and you can re-record each one in Settings. None of them needs any permission.</p>
     </div>
 
     <div class="keys reveal">
       <div class="keyrow">
         <div class="keycombo"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>E</kbd></div>
-        <div class="keydesc">
-          <strong>Show the panel</strong>
-          <span>ClipMate's answer to Windows' <span class="combo"><kbd class="tiny">Win</kbd>+<kbd class="tiny">V</kbd></span>.</span>
-        </div>
+        <div class="keydesc"><strong>Show the panel</strong><span>ClipMate's answer to Windows' <span class="combo"><kbd class="tiny">Win</kbd>+<kbd class="tiny">V</kbd></span>.</span></div>
       </div>
       <div class="keyrow">
         <div class="keycombo"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>D</kbd></div>
-        <div class="keydesc">
-          <strong>Take a screenshot</strong>
-          <span>Starts the crosshair immediately, without opening the panel.</span>
-        </div>
+        <div class="keydesc"><strong>Take a screenshot</strong><span>Starts the crosshair straight away, without opening the panel.</span></div>
+      </div>
+      <div class="keyrow">
+        <div class="keycombo"><kbd>⌃</kbd><kbd>⇧</kbd><kbd>⌘</kbd><kbd>T</kbd></div>
+        <div class="keydesc"><strong>Copy text from screen</strong><span>Drag over anything — the text in it goes to your clipboard.</span></div>
+      </div>
+      <div class="keyrow">
+        <div class="keycombo"><kbd class="ghost">your pick</kbd></div>
+        <div class="keydesc"><strong>Keep Awake on / off</strong><span>No default — record one if you want it. Or ⌥-click the menu bar icon.</span></div>
+      </div>
+      <div class="keyrow">
+        <div class="keycombo"><kbd class="ghost">your pick</kbd></div>
+        <div class="keydesc"><strong>Hide all notifications</strong><span>Instant quiet mode for calls and screen sharing. Press again to undo.</span></div>
       </div>
     </div>
 
     <p class="note reveal">
-      <strong>Why not ⌘F1?</strong> macOS reserves it for display mirroring, so the keystroke never
-      reaches an app at all. <strong>Heads-up:</strong> ⇧⌘D shadows Finder's “go to Desktop” while
-      ClipMate runs — re-record it in Settings if you use that.
+      <strong>Why these keys?</strong> ⌘F1 is reserved by macOS for display mirroring and never reaches an app, and
+      ⇧⌘T is "reopen closed tab" in every browser. <strong>Heads-up:</strong> ⇧⌘D shadows Finder's "go to Desktop"
+      while ClipMate runs — re-record it in Settings if you use that.
     </p>
   </section>
 
-  <!-- ───────────────────────── permissions ───────────────────────── -->
-  <section id="permissions" class="section">
+  <!-- ───────────────────────── privacy & permissions ───────────────────────── -->
+  <section id="privacy" class="section">
     <div class="section-head reveal">
-      <h2>What it asks for</h2>
-      <p>Almost nothing. There is no network code in this app at all — nothing ever leaves your Mac.</p>
+      <h2>Your data stays on your Mac</h2>
+      <p>ClipMate has no network code at all — no accounts, no analytics, no uploads. Here's exactly what it keeps and what it can see.</p>
     </div>
 
+    <div class="grid three reveal">
+      <article class="card flat">
+        <div class="card-ico">&#128190;</div>
+        <h3>What it keeps</h3>
+        <p>Your recent clips and pins, saved only on this Mac. Copied images are stored as PNGs and deleted as soon as they drop out of the history. Clear everything any time.</p>
+      </article>
+      <article class="card flat">
+        <div class="card-ico">&#129504;</div>
+        <h3>What it only remembers briefly</h3>
+        <p>Hidden notifications are held in memory so you can read them in the panel — never written to disk, and gone when ClipMate quits. Only app names and your on/off choices are saved.</p>
+      </article>
+      <article class="card flat">
+        <div class="card-ico">&#128683;</div>
+        <h3>What it never does</h3>
+        <p>Send anything anywhere, read your screen in the background, or ask for a permission before you use the feature that needs it.</p>
+      </article>
+    </div>
+
+    <h3 class="sub reveal" id="permissions">Permissions, and why</h3>
     <div class="table-wrap reveal">
       <table class="perms">
-        <thead><tr><th>Permission</th><th>Needed?</th><th>Why</th></tr></thead>
+        <thead><tr><th>Permission</th><th>When</th><th>Why, and what ClipMate sees</th></tr></thead>
         <tbody>
-          <tr><td>Notifications</td><td><span class="tag no">Never</span></td><td>Confirmations appear inside the panel instead.</td></tr>
-          <tr><td>Full Disk Access</td><td><span class="tag no">Never</span></td><td>Nothing is read outside the app's own preferences.</td></tr>
-          <tr><td>Screen Recording</td><td><span class="tag once">Once</span></td><td>The first time you take a screenshot. macOS shows the prompt itself.</td></tr>
-          <tr><td>Accessibility</td><td><span class="tag opt">Opt-in</span></td><td>Only if you switch on Finder cut &amp; paste. Intercepting ⌘X is impossible without it.</td></tr>
-          <tr><td>Automation (Finder)</td><td><span class="tag opt">Opt-in</span></td><td>Same feature only — reads the Finder selection and current folder.</td></tr>
+          <tr><td>Notifications</td><td><span class="tag no">Never</span></td><td>ClipMate never posts notifications. Confirmations appear in the panel or a small on-screen message.</td></tr>
+          <tr><td>Full Disk Access</td><td><span class="tag no">Never</span></td><td>Nothing outside ClipMate's own storage is read.</td></tr>
+          <tr><td>Screen Recording</td><td><span class="tag once">First screenshot</span></td><td>For screenshots and <em>Copy text from screen</em>. Only the area you drag over, only when you ask. macOS needs ClipMate reopened once after you allow it.</td></tr>
+          <tr><td>Accessibility</td><td><span class="tag opt">Opt-in</span></td><td>Only if you turn on Notification control or Finder cut &amp; paste. Notification control reads each pop-up's app name, title and text to close the ones you've hidden. ClipMate asks for your consent first.</td></tr>
+          <tr><td>Automation (Finder)</td><td><span class="tag opt">Opt-in</span></td><td>Finder cut &amp; paste only — reads the selected files and the open folder.</td></tr>
         </tbody>
       </table>
     </div>
+
+    <p class="note reveal">
+      <strong>ClipMate is switched on in System Settings but keeps asking?</strong> macOS ties permissions to an app's
+      signature, and each update looks like a new app — so that switch belongs to the old copy. ClipMate spots this and
+      shows <strong>Fix Permission</strong>: it clears the old entry and asks again. Switch ClipMate on once more and you're done.
+    </p>
   </section>
 
   <!-- ───────────────────────── install ───────────────────────── -->
   <section id="install" class="section">
     <div class="section-head reveal">
-      <h2>Install in a minute</h2>
+      <h2>Install in two minutes</h2>
+      <p>ClipMate is free and isn't sold through the App Store, so macOS asks you to confirm it once.</p>
     </div>
 
     <div class="steps reveal">
-      <div class="step"><span class="num">1</span><div><strong>Download the DMG</strong><p>Open it and drag ClipMate onto the Applications shortcut.</p></div></div>
-      <div class="step"><span class="num">2</span><div><strong>Right-click ▸ Open</strong><p>Just the first time. ClipMate is signed but not notarized, so macOS asks you to confirm once.</p></div></div>
-      <div class="step"><span class="num">3</span><div><strong>Press ⇧⌘E</strong><p>The panel appears. Copy a few things and they show up. Open Settings from the gear to turn on launch-at-login.</p></div></div>
+      <div class="step"><span class="num">1</span><div><strong>Download and drag to Applications</strong><p>Open <code>ClipMate.dmg</code> and drag ClipMate onto the Applications shortcut. Updating? Choose <em>Replace</em>.</p></div></div>
+      <div class="step"><span class="num">2</span><div>
+        <strong>Open it — and allow it once</strong>
+        <p>The first launch shows <em>"Apple could not verify ClipMate…"</em>. That's expected for free apps that aren't registered with Apple — it isn't a problem with ClipMate. Click <strong>Done</strong>, then:</p>
+        <div class="mini-path">System Settings <span>›</span> Privacy &amp; Security <span>›</span> scroll down <span>›</span> <b>Open Anyway</b></div>
+        <p>Confirm with your password or Touch ID. You only do this once. <em>(Right-click ▸ Open no longer works for this on macOS Sequoia and Tahoe.)</em></p>
+      </div></div>
+      <div class="step"><span class="num">3</span><div><strong>Read the privacy screen</strong><p>ClipMate shows what it keeps and what each permission is for. Click <em>Done</em> — nothing is requested yet.</p></div></div>
+      <div class="step"><span class="num">4</span><div><strong>Press <span class="combo"><kbd>⇧</kbd><kbd>⌘</kbd><kbd>E</kbd></span></strong><p>The panel appears. Copy a few things and watch them land. Open Settings from the gear to turn on launch at login, choose your shortcuts, and set up notifications.</p></div></div>
+    </div>
+
+    <div class="build reveal">
+      <h3>Prefer Terminal?</h3>
+      <p>This removes the download flag so the first launch isn't blocked:</p>
+      <pre><code>xattr -dr com.apple.quarantine /Applications/ClipMate.app
+open /Applications/ClipMate.app</code></pre>
     </div>
 
     <div class="cta center reveal">
@@ -197,11 +365,48 @@
 
     <div class="build reveal">
       <h3>Or build it yourself</h3>
-      <p>Nothing to trust, nothing hidden — one dependency and about a thousand lines of Swift.</p>
+      <p>Nothing hidden — one dependency and a few thousand lines of Swift.</p>
       <pre><code>git clone https://github.com/ganeshparajuli11/clipmate.git
 cd clipmate
 open ClipMate.xcodeproj    <span class="cmt"># then press ⌘R</span></code></pre>
-      <p class="small">The project signs with a local certificate named <code>ClipMate Self-Signed</code>. If you don't have one, set Signing to <em>Sign to Run Locally</em> in Xcode — see the README for why it exists.</p>
+      <p class="small">The project signs with a local certificate named <code>ClipMate Self-Signed</code>. If you don't have one, set Signing to <em>Sign to Run Locally</em> in Xcode — the README explains why it exists.</p>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── FAQ ───────────────────────── -->
+  <section id="faq" class="section">
+    <div class="section-head reveal">
+      <h2>Questions</h2>
+    </div>
+    <div class="faq reveal">
+      <details>
+        <summary>Why does macOS say "Apple could not verify ClipMate"?</summary>
+        <p>Apple only skips that warning for apps registered through its paid developer program. ClipMate is free and open source, so macOS asks you to confirm it once via <em>System Settings ▸ Privacy &amp; Security ▸ Open Anyway</em>. You can read every line of its code on GitHub.</p>
+      </details>
+      <details>
+        <summary>I allowed a permission but ClipMate keeps asking. Why?</summary>
+        <p>macOS remembers permissions by an app's signature, and every update looks like a new app. The switch you see on belongs to the previous copy. Click <strong>Fix Permission</strong> when ClipMate offers it (or in Settings ▸ Privacy &amp; Permissions), switch ClipMate on again, and for Screen Recording click <strong>Reopen ClipMate</strong>.</p>
+      </details>
+      <details>
+        <summary>Does ClipMate read or store my notifications?</summary>
+        <p>Only if you turn on Notification control, and only after you agree. It reads each pop-up's app name, title and text so it can close the ones from apps you've hidden. Hidden ones are kept in memory for the panel and forgotten when ClipMate quits. Nothing is ever saved to disk or sent anywhere.</p>
+      </details>
+      <details>
+        <summary>Does it work with notifications from my iPhone?</summary>
+        <p>Yes. When your iPhone forwards notifications to your Mac (iPhone Mirroring / Continuity), they appear in ClipMate's app list like any Mac app — switch off Instagram, Messenger or anything else. To stop an iPhone app reaching the Mac entirely, use <em>System Settings ▸ Notifications ▸ Allow notifications from iPhone</em>.</p>
+      </details>
+      <details>
+        <summary>Why does a hidden notification flash for a moment?</summary>
+        <p>macOS doesn't let one app block another's notifications before they appear, so ClipMate closes them the instant they show up — usually before they finish sliding in. Settings ▸ Notifications has a <em>Send test notification</em> button to try it.</p>
+      </details>
+      <details>
+        <summary>Is my screen or the images I scan sent anywhere?</summary>
+        <p>No. Text recognition uses Apple's Vision framework on your Mac and works offline. When you copy text from the screen, the captured image is deleted straight after the text is read.</p>
+      </details>
+      <details>
+        <summary>Will Keep Awake drain my battery?</summary>
+        <p>It keeps the Mac awake only while it's on. Set a time limit, let the display dim, or have it switch off automatically below a battery level you choose. It also stops the moment ClipMate quits.</p>
+      </details>
     </div>
   </section>
 
@@ -209,24 +414,32 @@ open ClipMate.xcodeproj    <span class="cmt"># then press ⌘R</span></code></pr
   <section class="section">
     <div class="section-head reveal">
       <h2>How it works</h2>
-      <p>No database, no accounts, no background uploads.</p>
+      <p>For the curious. No database, no accounts, no background uploads.</p>
     </div>
     <div class="grid two reveal">
       <article class="card flat">
         <h3>Capture</h3>
-        <p>A one-second timer compares <code>NSPasteboard.changeCount</code> — a single integer. The clipboard is only actually read when something changed. Watching the pasteboard rather than your keystrokes is why cuts are captured too, and why no Accessibility permission is needed.</p>
+        <p>A one-second timer compares <code>NSPasteboard.changeCount</code> — a single number. The clipboard is only read when it actually changed. Watching the clipboard rather than your keystrokes is why cuts are captured too.</p>
       </article>
       <article class="card flat">
         <h3>Storage</h3>
-        <p>Text and file paths live in <code>UserDefaults</code>. Images are written as PNGs in Application Support and pruned the moment they drop out of history — a Retina screenshot is far too big for a preferences file.</p>
+        <p>Text and file paths live in <code>UserDefaults</code>. Images are PNGs in Application Support, pruned the moment they leave the history.</p>
+      </article>
+      <article class="card flat">
+        <h3>Text recognition</h3>
+        <p><code>VNRecognizeTextRequest</code> at the accurate level with automatic language detection. Fragments are regrouped into lines, top to bottom and left to right, so tables stay readable.</p>
+      </article>
+      <article class="card flat">
+        <h3>Keep Awake</h3>
+        <p>An IOKit power assertion — the same mechanism as the <code>caffeinate</code> command. macOS releases it automatically if ClipMate quits, so your Mac can never get stuck awake.</p>
+      </article>
+      <article class="card flat">
+        <h3>Notification control</h3>
+        <p>Through the Accessibility API, ClipMate watches Notification Center's pop-ups and presses their own <em>Close</em> button when the app is hidden — exactly what clicking ✕ does. The Notification Center sidebar and your history are never touched.</p>
       </article>
       <article class="card flat">
         <h3>Pasting images</h3>
-        <p>Copying an image back publishes PNG <em>and</em> TIFF on a single pasteboard item. Receivers disagree — Preview reaches for TIFF, browsers for PNG — and one item carrying both means a paste never silently fails.</p>
-      </article>
-      <article class="card flat">
-        <h3>Privacy</h3>
-        <p>Everything stays on your Mac. There is no networking code in the app, no analytics, no auto-updater and no account. Clear the history any time from Settings or the panel.</p>
+        <p>Copying an image back publishes PNG <em>and</em> TIFF on one pasteboard item. Preview reaches for TIFF, browsers for PNG — so a paste never silently fails.</p>
       </article>
     </div>
   </section>
@@ -239,7 +452,7 @@ open ClipMate.xcodeproj    <span class="cmt"># then press ⌘R</span></code></pr
       <img src="./assets/clipmate-icon-128.png" alt="" width="32" height="32" />
       <div>
         <strong>ClipMate</strong>
-        <span>MIT licensed &middot; built with Swift &amp; SwiftUI</span>
+        <span>MIT licensed &middot; built with Swift &amp; SwiftUI &middot; nothing leaves your Mac</span>
       </div>
     </div>
     <div class="foot-links">
